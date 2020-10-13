@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<module>
+	<name>rg_shipit</name>
+	<displayName><![CDATA[Tarifador Couriers Chile by Shipit]]></displayName>
+	<version><![CDATA[1.0.0]]></version>
+	<description><![CDATA[Log&iacute;stica integral para comercio electr&oacute;nico con recogida o cumplimiento a trav&eacute;s de Shipit]]></description>
+	<author><![CDATA[Shipit]]></author>
+	<tab><![CDATA[shipping_logistics]]></tab>
+	<is_configurable>1</is_configurable>
+	<need_instance>1</need_instance>
+	<limited_countries></limited_countries>
+</module>
