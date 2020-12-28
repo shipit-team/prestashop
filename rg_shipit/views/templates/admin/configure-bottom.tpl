@@ -6,6 +6,13 @@
  * @license   Proprietary and confidential
  *}
 
+<style>
+.textErrorArea {
+  overflow-y: scroll;
+  height: 300px;
+  resize: none;
+}
+</style>
 <div class="panel">
     <h3><i class="icon icon-link"></i> {l s='Webhook and Logs' mod='rg_shipit'}</h3>
     <ul>
@@ -27,6 +34,15 @@
         <ul>
             {* <li><a href="{$rg_shipit._path|escape:'htmlall':'UTF-8'}docs/readme_en.pdf" target="_blank">{l s='English' mod='rg_shipit'}</a></li> *}
             <li><a href="{$rg_shipit._path|escape:'htmlall':'UTF-8'}docs/readme_es.pdf" target="_blank">{l s='Spanish' mod='rg_shipit'}</a></li>
+        </ul>
+    </p>
+</div>
+
+<div class="panel">
+    <h3><i class="icon icon-tags"></i> Log de Errores</h3>
+    <p>    
+        <ul class="textErrorArea">
+            {$logshipit}
         </ul>
     </p>
 </div>

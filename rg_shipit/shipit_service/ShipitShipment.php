@@ -60,4 +60,12 @@ class ShipitShipment extends ObjectModel
             WHERE shipit_id='.(int)$shipit_id
         );
     }
+
+    public static function getIdShipitByShipitOrderId($order_id) {
+      return Db::getInstance()->getValue(
+        'SELECT `id_rg_shipit_shipment`
+        FROM `'._DB_PREFIX_.'rg_shipit_shipment`
+        WHERE id_order='.(int)$order_id
+        );
+    }
 }

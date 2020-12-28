@@ -7,12 +7,29 @@
  * @license   Proprietary and confidential
  */
 
-require(dirname(__FILE__).'/../libraries/ShipitAPI.php');
+
 require(dirname(__FILE__).'/ShipitLists.php');
 require(dirname(__FILE__).'/ShipitTools.php');
 require(dirname(__FILE__).'/ShipitCache.php');
 require(dirname(__FILE__).'/ShipitServices.php');
 require(dirname(__FILE__).'/ShipitShipment.php');
+require(dirname(__FILE__).'/ShipitCourier.php');
+require(dirname(__FILE__).'/ShipitDestiny.php');
+require(dirname(__FILE__).'/ShipitInsurance.php');
+require(dirname(__FILE__).'/ShipitProduct.php');
+require(dirname(__FILE__).'/ShipitSeller.php');
+require(dirname(__FILE__).'/ShipitSize.php');
+require(dirname(__FILE__).'/Shipment.php');
+require(dirname(__FILE__).'/ShipitPayment.php');
+require(dirname(__FILE__).'/ShipitPrice.php');
+require(dirname(__FILE__).'/ShipitCityTrack.php');
+require(dirname(__FILE__).'/ShipitGiftCard.php');
+require(dirname(__FILE__).'/ShipitOrigin.php');
+require(dirname(__FILE__).'/ShipitOrder.php');
+require(dirname(__FILE__).'/ShipitSource.php');
+require(dirname(__FILE__).'/ShipitHttpClient.php');
+require(dirname(__FILE__).'/ShipitIntegrationCore.php');
+require(dirname(__FILE__).'/ShipitIntegrationOrder.php');
 require_once(dirname(__FILE__).'/../libraries/ShipitLAFFPack.php');
 
 class ShipitCore extends CarrierModule
@@ -123,50 +140,8 @@ class ShipitCore extends CarrierModule
 
             $dest_code = ShipitLists::searchCityId($address->city);
 
-            if ($dest_code) {
-                // Get the shipping costs available.
-                $services_cost = $this->getServicesCost($dest_code, $weight, $height, $width, $depth);
-
-                // If there is a services cost available.
-                if ($services_cost) {
-                    foreach ($services_cost as $service_reference => $service_cost) {
-                        $service = ShipitServices::getByCode($service_reference);
-                        if ($service) {
-                            $carrier = Carrier::getCarrierByReference($service->id_reference);
-                            if ($carrier) {
-                                if ($service_cost) {
-                                    $cost = $service_cost;
-
-                                    if ($impact_price = $this->config['SHIPIT_IMPACT_PRICE']) {
-                                        $impact_price_amount = $this->config['SHIPIT_IMPACT_PRICE_AMOUNT'];
-
-                                        switch ($impact_price) {
-                                            case 1: // Increase percent.
-                                                $cost += ($impact_price_amount / 100) * $cost;
-                                                break;
-                                            case 2: // Increase amount.
-                                                $cost += $impact_price_amount;
-                                                break;
-                                            case 3: // Reduction percent.
-                                                $cost -= ($impact_price_amount / 100) * $cost;
-                                                break;
-                                            case 4: // Reduction amount.
-                                                $cost -= $impact_price_amount;
-                                                break;
-                                        }
-                                    }
-                                } else {
-                                    $cost = false;
-                                }
-
-                                $cache->carriers[$carrier->id] = $cost;
-                            }
-                        }
-                    }
-                }
-            }
+            $cache = $this->getCostsByCarrier($cache, $dest_code, $weight, $height, $width, $depth);
         }
-
         return $cache->save();
     }
 
@@ -277,20 +252,21 @@ class ShipitCore extends CarrierModule
     private function calculatePricing(array $variables)
     {
         $params = array(
-            'package' => array(
-                'to_commune_id' => $variables['destination'],
+            'parcel' => array(
                 'height' => $variables['height'],
                 'length' => $variables['depth'],
                 'width' => $variables['width'],
                 'weight' => $variables['weight'],
-                'destiny' => 'Domicilio'
+                'type_of_destiny' => 'Domicilio',
+                'origin_id' => 308,
+                'destiny_id' => $variables['destination']
             )
         );
 
         $errors = false;
-        $api = new ShipitAPI($this->config['SHIPIT_EMAIL'], $this->config['SHIPIT_TOKEN']);
-        $results = $api->getEstimateCost($params, (int)$this->config['SHIPIT_DISPATCH_ALGORITHM'], $errors);
-
+        $api = new ShipitIntegrationCore($this->config['SHIPIT_EMAIL'], $this->config['SHIPIT_TOKEN'],4);
+        $results = $api->rates($params,(int)$this->config['SHIPIT_DISPATCH_ALGORITHM']);
+        
         if (!$results) {
             ShipitTools::log('calculatePricing: '.print_r($errors, true));
 
@@ -298,5 +274,51 @@ class ShipitCore extends CarrierModule
         }
 
         return $results;
+    }
+
+    public function getCostsByCarrier($cache, $dest_code, $weight, $height, $width, $depth) {
+        if ($dest_code) {
+            // Get the shipping costs available.
+            $services_cost = $this->getServicesCost($dest_code, $weight, $height, $width, $depth);
+            
+            // If there is a services cost available.
+            if ($services_cost) {
+                foreach ($services_cost as $service_reference => $service_cost) {
+                    $service = ShipitServices::getByCode($service_reference);
+                    if ($service) {
+                        $carrier = Carrier::getCarrierByReference($service->id_reference);
+                        if ($carrier) {
+                            if ($service_cost) {
+                                $cost = $service_cost;
+                                if ($impact_price = $this->config['SHIPIT_IMPACT_PRICE']) {
+                                    $impact_price_amount = $this->config['SHIPIT_IMPACT_PRICE_AMOUNT'];
+
+                                    switch ($impact_price) {
+                                        case 1: // Increase percent.
+                                            $cost += ($impact_price_amount / 100) * $cost;
+                                            break;
+                                        case 2: // Increase amount.
+                                            $cost += $impact_price_amount;
+                                            break;
+                                        case 3: // Reduction percent.
+                                            $cost -= ($impact_price_amount / 100) * $cost;
+                                            break;
+                                        case 4: // Reduction amount.
+                                            $cost -= $impact_price_amount;
+                                            break;
+                                    }
+                                }
+                            } else {
+                                $cost = false;
+                             
+                            }
+                           $cache->carriers[$carrier->id] = $cost;
+                           
+                        }
+                    }
+                }
+            }
+        }
+        return $cache;
     }
 }
