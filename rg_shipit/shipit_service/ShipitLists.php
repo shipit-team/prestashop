@@ -25,9 +25,8 @@ class ShipitLists
 
         $couriers = array();
         $errors = false;
-        $api = new ShipitAPI(Configuration::get('SHIPIT_EMAIL'), Configuration::get('SHIPIT_TOKEN'));
-
-        if ($results = $api->getCouriersList($errors)) {
+        $api = new ShipitIntegrationCore(Configuration::get('SHIPIT_EMAIL'), Configuration::get('SHIPIT_TOKEN'),2);
+            if ($results = $api->couriers($errors)) {
             $couriers[] = array(
                 'code' => 'shipit',
                 'desc' => 'Shipit',
@@ -37,11 +36,11 @@ class ShipitLists
             );
             foreach ($results as $courier) {
                 $couriers[] = array(
-                    'code' => $courier['id'],
-                    'desc' => $courier['name'],
-                    'active' => $courier['active'],
-                    'image' => $courier['image'],
-                    'tracking_url' => (isset($tracking_urls[$courier['id']]) ? $tracking_urls[$courier['id']] : '')
+                    'code' => $courier->id,
+                    'desc' => $courier->name,
+                    'active' => $courier->available_to_ship,
+                    'image' => $courier->logo_url,
+                    'tracking_url' => (isset($tracking_urls[$courier->id]) ? $tracking_urls[$courier->id] : '')
                 );
             }
         }

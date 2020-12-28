@@ -326,7 +326,7 @@ class ShipitTools
         return self::error_log(
             '['.date('Y-m-d H:i:s').'] '.print_r($object, true)."\n",
             3,
-            dirname(__FILE__).'/../error_log'
+            dirname(__FILE__).'/../error_log.txt'
         );
     }
 
@@ -361,5 +361,37 @@ class ShipitTools
         }
 
         return Db::getInstance()->execute(rtrim($sql, ','));
+    }
+
+
+    public static function getClientName($orderId) {
+      $shipitService = new ShipitServices();
+      $service = $shipitService->getByReference($orderId);
+      $clientName = ($service->code == 'shipit' ? null : $service->desc);
+
+      return $clientName;
+    }
+
+    public static function getCourierId($email, $token, $live, $clientName) {
+        $api = new ShipitIntegrationCore($email, $token, $live);
+        $courierList = $api->couriers();          
+        $courierId = null;      
+        foreach ($courierList as $courier) {
+           if(strtolower($courier->name) == strtolower($clientName )) {
+             $courierId = $courier->id;
+           }
+        }
+
+        return $courierId;
+    }
+
+    public static function splitAddressAndNumber($address)
+    {
+        $result = array();
+        preg_match_all('!\d+!', $address, $streetNumberArr);
+        $streetNumber = $streetNumberArr[0][0];
+        $result['streetNumber'] = $streetNumber;
+        $result['address'] = str_replace(" {$streetNumber}","",$address);
+        return $result;
     }
 }
