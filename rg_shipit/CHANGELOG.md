@@ -1,5 +1,9 @@
 # CHANGELOG
 
+= 1.2.3 =
+*send orders with shipping type no shipit
+*send integration date
+*send rate from
 
 = 1.2.2 =
 *keep the reference id when creating a new record in the carriers table

@@ -16,4 +16,8 @@
 5. Configuracion opcion de empaque (opcional)
 6. Listo!
 
-- [Manual instalacion](https://github.com/shipit-team/prestashop/tree/main/rg_shipit/docs/readme_es.pdf)
+- [Manual instalación](https://github.com/shipit-team/prestashop/tree/main/rg_shipit/docs/readme_es.pdf)
+
+# Especificaciones
+
+1. el plugin es estable entre las versiones 1.6.1.1 y 1.7.6.9 de Prestashop.
