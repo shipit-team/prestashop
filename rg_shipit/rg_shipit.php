@@ -23,7 +23,7 @@ class Rg_Shipit extends ShipitCore
   public function __construct() {
     $this->name = 'rg_shipit';
     $this->tab = 'shipping_logistics';
-    $this->version = '1.2.3';
+    $this->version = '1.4.0';
     $this->author = 'Shipit';
     $this->author_link = 'https://shipit.cl/';
     $this->need_instance = 1;

@@ -1,5 +1,8 @@
 # CHANGELOG
 
+= 1.4.0 =
+*add bugsnag
+
 = 1.2.3 =
 *send orders with shipping type no shipit
 *send integration date
