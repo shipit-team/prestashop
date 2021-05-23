@@ -46,7 +46,7 @@
     public function getNumber() {
       return $this->street;
     }
-    
+
     public function getComplement() {
       return $this->complement;
     }

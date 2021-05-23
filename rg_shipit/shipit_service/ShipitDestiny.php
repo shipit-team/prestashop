@@ -44,7 +44,7 @@
         'courier_branch_office_id' => $this->getCourierBranchOfficeId(),
         'store' => $this->getStore(),
         'destiny_id' => $this->getDestinyId(),
-        'name' => $this->getName()    
+        'name' => $this->getName()
       );
     }
 
@@ -63,7 +63,7 @@
     function getCommuneId() {
       return $this->commune_id;
     }
-    
+
     function getCommuneName() {
       return $this->commune_name;
     }

@@ -67,7 +67,7 @@ class ShipitCore extends CarrierModule
                     $weight = ShipitTools::getProductsWeight($this->config, $cart);
 
                     if (!$volume || !$weight) {
-                        ShipitTools::log('updateCache: products without dimensions and/or weight (volume => '.$volume.', weight => '.$weight.').');
+                      // ShipitTools::log('updateCache: products without dimensions and/or weight (volume => '.$volume.', weight => '.$weight.').');
 
                         return false;
                     }
@@ -109,7 +109,7 @@ class ShipitCore extends CarrierModule
 
                     // Shipit does not allow empty fields.
                     if (!$width || !$height || !$depth || !$weight) {
-                        ShipitTools::log('updateCache: products without dimensions and/or weight (width => '.$width.', height => '.$height.', depth => '.$depth.', weight => '.$weight.').');
+                      // ShipitTools::log('updateCache: products without dimensions and/or weight (width => '.$width.', height => '.$height.', depth => '.$depth.', weight => '.$weight.').');
 
                         return false;
                     }
@@ -267,7 +267,7 @@ class ShipitCore extends CarrierModule
         $errors = false;
         $api = new ShipitIntegrationCore($this->config['SHIPIT_EMAIL'], $this->config['SHIPIT_TOKEN'],4);
         $results = $api->rates($params,(int)$this->config['SHIPIT_DISPATCH_ALGORITHM']);
-        
+
         if (!$results) {
             ShipitTools::log('calculatePricing: '.print_r($errors, true));
 
@@ -281,7 +281,7 @@ class ShipitCore extends CarrierModule
         if ($dest_code) {
             // Get the shipping costs available.
             $services_cost = $this->getServicesCost($dest_code, $weight, $height, $width, $depth);
-            
+
             // If there is a services cost available.
             if ($services_cost) {
                 foreach ($services_cost as $service_reference => $service_cost) {
@@ -311,10 +311,10 @@ class ShipitCore extends CarrierModule
                                 }
                             } else {
                                 $cost = false;
-                             
+
                             }
                            $cache->carriers[$carrier->id] = $cost;
-                           
+
                         }
                     }
                 }

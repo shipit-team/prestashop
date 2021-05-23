@@ -1,11 +1,11 @@
 <?php
   use GuzzleHttp\Client;
 
-  class ShipitHttpClient {  
+  class ShipitHttpClient {
     public $endpoint = '';
     public $headers = array();
     public $client;
-    
+
     public function __construct($endpoint, $headers) {
       $this->endpoint = $endpoint;
       $this->headers = $headers;
@@ -13,7 +13,7 @@
     }
 
     public function get() {
-      $response = $this->client->get( 
+      $response = $this->client->get(
         $this->endpoint
         , ['headers' => $this->headers
         ,'allow_redirects'=> ['strict'=>true]
@@ -28,7 +28,17 @@
         ,['json' => $body
         ,'headers' => $this->headers
         ,'allow_redirects'=> ['strict'=>true]]);
-        
+
+      return $response;
+    }
+
+    public function allow_redirects_post($body) {
+      $response = $this->client->post(
+        $this->endpoint
+        ,['json' => $body
+        ,'headers' => $this->headers
+        ,'allow_redirects'=> ['strict'=>true]]);
+
       return $response;
     }
 
@@ -39,7 +49,7 @@
         , 'headers' => $this->headers]
       );
       $body = $response->getBody();
-    
+
       return json_decode( $body,true);
     }
 
@@ -49,7 +59,7 @@
         , ['json' => $body
         , 'headers' => $this->headers]
       );
-      
+
       return $response;
     }
   }
