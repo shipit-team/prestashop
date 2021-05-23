@@ -1,4 +1,4 @@
-<?php 
+<?php
   class ShipitInsurance {
     public $ticket_amount = 0.0;
     public $ticket_number = '';
@@ -23,7 +23,7 @@
         'extra' => $this->getExtra(),
         'name' => $this->getName(),
         'store' => $this->getStore(),
-        'company_id' => $this->getCompanyId()     
+        'company_id' => $this->getCompanyId()
       );
     }
 
@@ -34,7 +34,7 @@
     function getTicketNumber() {
       return $this->ticket_number;
     }
-    
+
     function getDetail() {
       return $this->detail;
     }

@@ -10,7 +10,7 @@
 if (!defined('_PS_VERSION_')) {
     exit;
 }
-
+require_once __DIR__ . '/vendor/autoload.php';
 require(dirname(__FILE__).'/shipit_service/ShipitCore.php');
 
 class Rg_Shipit extends ShipitCore
@@ -267,8 +267,10 @@ class Rg_Shipit extends ShipitCore
               $storeName = Configuration::get('PS_SHOP_NAME');
               $module = new Rg_Shipit();
               $configuration = array('client_id' => $storeName.'_shipit' , 'client_secret' => $module->secure_key, 'store_name' => $storeName);
-              $storeConfiguration = array('name' => 'prestashop', 'configuration' => $configuration);              
+              $storeConfiguration = array('name' => 'prestashop', 'configuration' => $configuration);
               $api->configure($storeConfiguration);
+              $seller_configuration = $api->setting();
+              Configuration::updateValue('SHIPIT_B_T', base64_encode($seller_configuration->configuration->bugsnag_token));
 
               foreach ($val as $k => $v) {
                 Configuration::updateValue($k, $v);
@@ -929,15 +931,17 @@ public function hookDisplayAdminOrder($params) {
         $customer->email,
         ($address->phone_mobile ? $address->phone_mobile : $address->phone)
       );
-      $insurance = new ShipitInsurance(0.0,'','',false);            
       $arrayProducts = array();
       $items = 0;
+      $insuranceProducts = '';
       foreach ($products as $prod) {
         $product = new ShipitProduct($prod['product_reference'],$prod['product_quantity'],null,null);
         array_push($arrayProducts,$product);
         $items++;
+        if ($insuranceProducts!='') $insuranceProducts .= ',';
+        $insuranceProducts .=  $prod['product_name'];
       }
-    
+      $insurance = new ShipitInsurance($order->total_paid - $order->total_shipping,$id_order,$insuranceProducts,true);
       $shipment = new Shipment((int)$order->id, $items, $seller, $size,$courier, $destiny, $insurance, $arrayProducts);
       $shipit_integration_core = new ShipitIntegrationCore($this->config['SHIPIT_EMAIL'], $this->config['SHIPIT_TOKEN'],4);
       $shipit_id = $shipit_integration_core->shipments($shipment);
@@ -979,20 +983,23 @@ public function hookDisplayAdminOrder($params) {
     $address = new Address((int)$order->id_address_delivery);
     $customer = new Customer((int)$order->id_customer);
     $items = 0;
+    $insuranceProducts = '';
     foreach ($products as $prod) {
       $inventory[] = (object) array( 'sku_id' => $prod['product_reference'], 'amount' => $prod['product_quantity'], 'id' => $prod['product_id'], 'description' => $prod['product_name'], 'warehouse_id' => 1 );
       $items += $prod['product_quantity'];
+      if ($insuranceProducts!='') $insuranceProducts .= ',';
+      $insuranceProducts .=  $prod['product_name'];
     }
     $testStreets = array();
     $testStreets[]    = $address->address1;
-    for ($i = 0, $totalTestStreets = count($testStreets); $i < $totalTestStreets; $i++) {              
-      $addressSplit =  $this->split_street($testStreets[$i]);                 
+    for ($i = 0, $totalTestStreets = count($testStreets); $i < $totalTestStreets; $i++) {
+      $addressSplit =  $this->split_street($testStreets[$i]);
     }
 
     $service = ShipitServices::getByReference((int)$order->id_carrier);
     $dest_code = ShipitLists::searchcityId($address->city);
-    $shipit_payment = new ShipitPayment($order->payment,0,0,0,0,$order->total_paid,'',false);    
-    $shipit_source = new ShipitSource('','','','',''); 
+    $shipit_payment = new ShipitPayment($order->payment,0,0,0,0,$order->total_paid,'',false);
+    $shipit_source = new ShipitSource('','','','','');
     $shipit_seller = new ShipitSeller((int)$order->id, Tools::getHttpHost(true).__PS_BASE_URI__,'', $this->config['SHIPIT_INTEGRATION_DATE']);
     $shipit_gift_card = new ShipitGiftCard();
     $shipit_size = new ShipitSize((int)$order->id_cart);
@@ -1004,9 +1011,10 @@ public function hookDisplayAdminOrder($params) {
       (int)!$this->config['SHIPIT_LIVE_MODE'],
       $courierClientName
     );
+
     $shipit_courier = new ShipitCourier($courierClientName, $CourierId, ($CourierId == null) ? false : true);
     $shipit_price = new ShipitPrice($order->total_paid,$order->total_shipping,0,0,$order->carrier_tax_rate,0);
-    $shipit_insurance = new ShipitInsurance(0.0,392832,'',false);  
+    $shipit_insurance = new ShipitInsurance($order->total_paid - $order->total_shipping,$id_order,$insuranceProducts,true);
     $shipit_city_track = new ShipitCityTrack('','2019-06-07T17:13:09.141-04:00','','','');
     $shipit_origin = new ShipitOrigin('','','','','','','',false,null,null);
     $shipit_destiny = new ShipitDestiny(
@@ -1023,8 +1031,8 @@ public function hookDisplayAdminOrder($params) {
       'predeterminado'
     );
     $shipit_order = new ShipitOrder(
-      2,
       3,
+      2,
       (int)$order->id,
       $items,
       false,
@@ -1045,7 +1053,7 @@ public function hookDisplayAdminOrder($params) {
       $shipit_origin,
       $shipit_destiny
     );
-                      
+
       $api_order = new ShipitIntegrationOrder($this->config['SHIPIT_EMAIL'], $this->config['SHIPIT_TOKEN'],1);
       $integrationseller = $api_order->setting();
       $errors = array();
