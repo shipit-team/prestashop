@@ -1,4 +1,4 @@
-<?php 
+<?php
   class ShipitInsurance {
     public $ticket_amount = 0.0;
     public $ticket_number = '';
@@ -12,7 +12,7 @@
       $this->ticket_amount = $ticket_amount;
       $this->ticket_number = $ticket_number;
       $this->detail = $detail;
-      $this->extra = $extra;
+      $this->extra = $this->validateInsurance($ticket_amount);
     }
 
     function getInsurance() {
@@ -23,7 +23,7 @@
         'extra' => $this->getExtra(),
         'name' => $this->getName(),
         'store' => $this->getStore(),
-        'company_id' => $this->getCompanyId()     
+        'company_id' => $this->getCompanyId()
       );
     }
 
@@ -34,13 +34,14 @@
     function getTicketNumber() {
       return $this->ticket_number;
     }
-    
+
     function getDetail() {
       return $this->detail;
     }
 
     function getExtra() {
-      return $this->extra;
+      $extra = $this->validateInsurance($this->ticket_amount);
+      return $extra;
     }
 
     function getName() {
@@ -53,6 +54,13 @@
 
     function getCompanyId() {
       return $this->company_id;
+    }
+
+    function validateInsurance($total) {
+      $shipit_integration_core = new ShipitIntegrationCore(Configuration::get('SHIPIT_EMAIL'), Configuration::get('SHIPIT_TOKEN'),4);
+      $settings = $shipit_integration_core->insurance();
+      $insurance_setting = $settings->configuration->automatizations;
+      return ($insurance_setting->insurance->active) && ($total > $insurance_setting->insurance->amount);
     }
   }
 ?>

@@ -62,7 +62,7 @@ class ShipitServices extends ObjectModel
         $sql->where('`id_carrier` = '.(int)($id_reference));
         $id_reference = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql->build());
       }
-        
+
       $sql = new DbQuery();
       $sql->select('`id_service`');
       $sql->from(self::$definition['table']);

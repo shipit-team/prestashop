@@ -1,0 +1,19 @@
+{
+    "name": "shipit/rg_shipit",
+    "description": "shipit",
+    "authors": [
+        {
+            "name": "alvaro",
+            "email": "alvaro@shipit.cl"
+        }
+    ],
+    "require": {
+        "php": ">=5.6.0",
+        "guzzlehttp/guzzle": "~5.0@dev"
+    },
+    "config": {
+        "preferred-install": "dist",
+        "prepend-autoloader": false
+    },
+    "type": "prestashop-module"
+}

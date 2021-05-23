@@ -26,7 +26,7 @@
         'without_courier' => $this->getWithoutCourier()
       );
     }
-    
+
     function getPayable() {
       return $this->payable;
     }
@@ -37,12 +37,12 @@
 
     function getAlgorithmDays() {
       return $this->algorithm_days;
-    }  
+    }
 
     function getWithoutCourier() {
       return $this->without_courier;
-    }  
-      
+    }
+
     function getClient() {
       return $this->client;
     }

@@ -33,7 +33,7 @@
         'name' => $this->getName()
       );
     }
-    
+
     function getWidth() {
       return $this->width;
     }
@@ -56,14 +56,14 @@
 
     function getStore() {
       return $this->store;
-    }   
+    }
 
     function getPackingId() {
       return $this->packing_id;
-    }   
-    
+    }
+
     function getName() {
       return $this->name;
-    }   
+    }
   }
 ?>

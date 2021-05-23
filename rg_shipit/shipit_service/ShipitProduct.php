@@ -17,7 +17,7 @@
         'sku_id' => $this->getSkuId(),
         'amount' => $this->getAmount(),
         'warehouse_id' => $this->getWarehouseId(),
-        'description' => $this->getDescription()   
+        'description' => $this->getDescription()
       );
     }
 
