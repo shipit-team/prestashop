@@ -11,7 +11,7 @@
       $this->ip = $ip;
       $this->browser = $browser;
       $this->language = $language;
-      $this->location = $location;   
+      $this->location = $location;
     }
 
     function getSource() {
@@ -23,7 +23,7 @@
         'location' => $this->getLocation()
       );
     }
-      
+
     function getChannel() {
       return $this->channel;
     }

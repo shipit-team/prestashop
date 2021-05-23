@@ -22,17 +22,17 @@
     public $origin = array();
     public $destiny = array();
     public $mongo_order_seller;
-    
+
     public function __construct(
         $platform,
         $kind,
-        $reference, 
-        $items, 
-        $sandbox, 
-        $company_id, 
-        $service, 
-        $state, 
-        $products, 
+        $reference,
+        $items,
+        $sandbox,
+        $company_id,
+        $service,
+        $state,
+        $products,
         $payable,
         $payment,
         $source,
@@ -87,7 +87,7 @@
         'source' => $this->getSource(),
         'seller' => $this->getSeller(),
         'gidt_card' => $this->getGiftCard(),
-        'sizes' => $this->getSize(),   
+        'sizes' => $this->getSize(),
         'courier' => $this->getCourier(),
         'prices' => $this->getPrice(),
         'insurance' => $this->getInsurance(),
@@ -97,7 +97,7 @@
         'destiny' => $this->getMongoOrderSeller()
       );
     }
-    
+
     public function getPlatform() {
       return $this->platform;
     }

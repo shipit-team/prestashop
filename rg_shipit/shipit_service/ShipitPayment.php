@@ -32,7 +32,7 @@
         'confirmed' => $this->getConfirmed()
       );
     }
-    
+
     function getType() {
       return $this->type;
     }

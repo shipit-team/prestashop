@@ -17,7 +17,7 @@
         'total_amount' => $this->getTotalAmount()
       );
     }
-      
+
     function getFrom() {
       return $this->from;
     }

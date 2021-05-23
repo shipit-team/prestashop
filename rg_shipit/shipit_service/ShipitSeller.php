@@ -22,7 +22,7 @@
         'created_at' => $this->getCreatedAt()
       );
     }
-    
+
     function getId() {
       return $this->id;
     }
@@ -38,10 +38,10 @@
     function getStatus() {
       return $this->status;
     }
-    
+
     function getCreatedAt() {
       return $this->created_at;
     }
-      
+
   }
 ?>

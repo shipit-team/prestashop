@@ -43,7 +43,7 @@
       $client = new ShipitHttpClient($this->base.'/orders', $this->headers);
       $response = $client->post(['order' => $order]);
       if ($response->getStatusCode() != 200) {
-        ShipitTools::log('PrestaShop ('._PS_VERSION_.'), orders response: '.print_r($response,true));    
+        ShipitTools::log('PrestaShop ('._PS_VERSION_.'), orders response: '.print_r($response,true));
       } else {
         $order = json_decode($response->getBody());
       }

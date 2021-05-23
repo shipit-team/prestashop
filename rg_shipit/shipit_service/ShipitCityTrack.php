@@ -20,7 +20,7 @@
         'confirmed' => $this->getConfirmed(),
         'deliver' => $this->getDeliver(),
         'canceled' => $this->getCanceled(),
-        'archived' => $this->getArchived()   
+        'archived' => $this->getArchived()
        );
     }
 

@@ -56,6 +56,7 @@
       $response = $client->post(['shipment' => $shipment]);
       if ($response->getStatusCode() != 200) {
         ShipitTools::log('PrestaShop ('._PS_VERSION_.'), shipment response: '.print_r($response,true));
+        ShipitBugsnag::bugsnagLog($response, 'shipment', $shipment['reference']);
       } else {
         $shipment = json_decode($response->getBody());
       }
@@ -101,7 +102,7 @@
       if ($response->getStatusCode() != 200) {
         ShipitTools::log('PrestaShop ('._PS_VERSION_.'), insurance response: '.print_r($response,true));
       } else {
-        $setting = json_decode($response['body'])->configuration->automatizations->insurance;
+        $setting = json_decode($response->getBody());
       }
       return $setting;
     }
@@ -119,13 +120,13 @@
 
     function rates($params = array(), $best_price) {
       $client = new ShipitHttpClient($this->base.'/rates', $this->headers);
-      $response = $client->post($params);
+      $response = $client->allow_redirects_post($params);
       if ($response->getStatusCode() != 200) {
         ShipitTools::log('PrestaShop ('._PS_VERSION_.'), rates response: '.print_r($response,true));
       } else {
         $result = json_decode($response->getBody());
       }
-    
+
       $costs = array();
       if ($best_price) {
           $costs['shipit'] = (float)$result->lower_price->price;
@@ -136,7 +137,7 @@
             }
           }
       }
-      
+
       return $costs;
     }
 

@@ -50,7 +50,7 @@
     function getSizes() {
       return $this->sizes;
     }
-    
+
     function getCourier() {
       return $this->courier;
     }
@@ -62,9 +62,9 @@
     function getInsurance() {
       return $this->insurance;
     }
-    
+
     function getProducts() {
       return $this->products;
-    } 
+    }
   }
 ?>
