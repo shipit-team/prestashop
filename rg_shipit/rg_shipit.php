@@ -23,7 +23,7 @@ class Rg_Shipit extends ShipitCore
   public function __construct() {
     $this->name = 'rg_shipit';
     $this->tab = 'shipping_logistics';
-    $this->version = '1.4.0';
+    $this->version = '1.4.1';
     $this->author = 'Shipit';
     $this->author_link = 'https://shipit.cl/';
     $this->need_instance = 1;
@@ -924,7 +924,7 @@ public function hookDisplayAdminOrder($params) {
       $destiny = new ShipitDestiny(
         $splitAddress['streetNumber'],
         $splitAddress['address'],
-        ($address->city ? $address->city : '').($address->other ? ' '.$address->other : ''),
+        $address->address2,
         (int)$dest_code,
         $address->city,
         $address->firstname.' '.$address->lastname,
