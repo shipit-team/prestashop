@@ -374,8 +374,8 @@ class ShipitTools
 
     public static function getCourierId($email, $token, $live, $clientName) {
         $api = new ShipitIntegrationCore($email, $token, $live);
-        $courierList = $api->couriers();          
-        $courierId = null;      
+        $courierList = $api->couriers();
+        $courierId = null;
         foreach ($courierList as $courier) {
            if(strtolower($courier->name) == strtolower($clientName )) {
              $courierId = $courier->id;
@@ -385,13 +385,15 @@ class ShipitTools
         return $courierId;
     }
 
-    public static function splitAddressAndNumber($address)
-    {
-        $result = array();
-        preg_match_all('!\d+!', $address, $streetNumberArr);
-        $streetNumber = $streetNumberArr[0][0];
-        $result['streetNumber'] = $streetNumber;
-        $result['address'] = str_replace(" {$streetNumber}","",$address);
-        return $result;
+    public static function splitAddressAndNumber($streetStr) {
+      $aMatch = array();
+      $pattern = '/([a-z]|[!"$%&ñÑ()=#,.])\s*\d{1,5}/i';
+      preg_match($pattern, $streetStr, $aMatch);
+      $number = preg_replace('/\D/', '', $aMatch[0]);
+      $splitedAddress = explode($number, $streetStr);
+      $street = ltrim(preg_replace('/[#$%-]/', '', $splitedAddress[0]));
+      $numberAddition = sizeof($splitedAddress) > 1 ? $splitedAddress[1] : "";
+
+      return array('address' => $street, 'streetNumber' => $number, 'numberAddition' => $numberAddition);
     }
 }
