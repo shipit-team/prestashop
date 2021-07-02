@@ -1,5 +1,12 @@
 # CHANGELOG
 
+= 1.4.1 =
+*fix problem with  stranger symbols in address field
+
+= 1.4.0 =
+*add insurance to order and shipment
+*add composer
+
 = 1.2.3 =
 *send orders with shipping type no shipit
 *send integration date

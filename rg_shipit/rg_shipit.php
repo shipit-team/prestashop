@@ -23,7 +23,7 @@ class Rg_Shipit extends ShipitCore
   public function __construct() {
     $this->name = 'rg_shipit';
     $this->tab = 'shipping_logistics';
-    $this->version = '1.4.0';
+    $this->version = '1.4.1';
     $this->author = 'Shipit';
     $this->author_link = 'https://shipit.cl/';
     $this->need_instance = 1;
@@ -992,8 +992,9 @@ public function hookDisplayAdminOrder($params) {
     }
     $testStreets = array();
     $testStreets[]    = $address->address1;
+    $tool = new ShipitTools();
     for ($i = 0, $totalTestStreets = count($testStreets); $i < $totalTestStreets; $i++) {
-      $addressSplit =  $this->split_street($testStreets[$i]);
+      $addressSplit = $tool->splitAddressAndNumber($testStreets[$i]);
     }
 
     $service = ShipitServices::getByReference((int)$order->id_carrier);
@@ -1018,8 +1019,8 @@ public function hookDisplayAdminOrder($params) {
     $shipit_city_track = new ShipitCityTrack('','2019-06-07T17:13:09.141-04:00','','','');
     $shipit_origin = new ShipitOrigin('','','','','','','',false,null,null);
     $shipit_destiny = new ShipitDestiny(
-      $addressSplit['number'],
-      ($addressSplit['street'] != '') ? $addressSplit['street'] : $address->address1,
+      $addressSplit['streetNumber'],
+      ($addressSplit['address'] != '') ? $addressSplit['address'] : $address->address1,
       ($addressSplit['numberAddition'] ? $addressSplit['numberAddition'] : '').($address->address2 ? ' '.$address->address2 : ''),
       (int)$dest_code,
       $address->city,
