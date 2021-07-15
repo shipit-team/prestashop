@@ -1,5 +1,8 @@
 # CHANGELOG
 
+= 1.4.2 =
+*fix non shipit orders are shipped
+
 = 1.4.1 =
 *fix problem with  stranger symbols in address field
 
