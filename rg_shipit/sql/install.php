@@ -47,6 +47,47 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'rg_shipit_shipment` (
     PRIMARY KEY  (`id_rg_shipit_shipment`)
 ) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8;';
 
+$sql[] = 'INSERT INTO `ps_order_state` (
+    `id_order_state`,
+    `invoice`, 
+    `send_email`, 
+    `module_name`, 
+    `color`, 
+    `unremovable`, 
+    `hidden`, 
+    `logable`, 
+    `delivery`, 
+    `shipped`, 
+    `paid`, 
+    `pdf_invoice`, 
+    `pdf_delivery`, 
+    `deleted`) 
+    VALUES  (14, 0, 0, "", "rgb(244 207 88)", 1, 0, 0, 1, 1, 1, 0, 0, 0),
+            (15, 0, 0, "", "rgb(108 202 121)", 1, 0, 0, 1, 1, 1, 0, 0, 0),
+            (16, 0, 0, "", "rgb(244 207 88)", 1, 0, 0, 1, 1, 1, 0, 0, 0),
+            (17, 0, 0, "", "rgb(244 207 88)", 1, 0, 0, 1, 1, 1, 0, 0, 0),
+            (18, 0, 0, "", "rgb(221 114 114)", 1, 0, 0, 1, 1, 1, 0, 0, 0),
+            (19, 0, 0, "", "rgb(230 184 175)", 1, 0, 0, 1, 1, 1, 0, 0, 0),
+            (20, 0, 0, "", "rgb(72 74 125)", 1, 0, 0, 1, 1, 1, 0, 0, 0),
+            (21, 0, 0, "", "rgb(244 207 88)", 1, 0, 0, 1, 1, 1, 0, 0, 0),
+            (22, 0, 0, "", "rgb(72 74 125)", 1, 0, 0, 1, 1, 1, 0, 0, 0);';
+
+$sql[] = 'INSERT INTO `ps_order_state_lang` (
+    `id_order_state`, 
+    `id_lang`,
+    `name`, 
+    `template`)
+    VALUES  (14, 1, "En ruta", ""),
+            (15, 1, "Disponible en sucursal", ""),
+            (16, 1, "Problemas de transporte", ""),
+            (17, 1, "Problemas de dirección", ""),
+            (18, 1, "Reembolsado por Shipit", ""),
+            (19, 1, "Problemas de transporte", ""),
+            (20, 1, "Devuelto", ""),
+            (21, 1, "En tránsito", ""),
+            (22, 1, "Envío cancelado", "");';
+            
+            
 foreach ($sql as $query) {
     if (Db::getInstance()->execute($query) == false) {
         return false;

@@ -23,7 +23,7 @@ class Rg_Shipit extends ShipitCore
   public function __construct() {
     $this->name = 'rg_shipit';
     $this->tab = 'shipping_logistics';
-    $this->version = '1.4.1';
+    $this->version = '1.5.0';
     $this->author = 'Shipit';
     $this->author_link = 'https://shipit.cl/';
     $this->need_instance = 1;
@@ -1507,7 +1507,39 @@ public function hookDisplayAdminOrder($params) {
         'tracking' => pSQL($tracking),),
         'id_order='.(int)$shipment->id_order
       );
+      $shipit_statuses = [
+        'in_route' => 14,
+        'delivered' => 5,
+        'by_retired' => 15,
+        'failed' => 16,
+        'indemnify' => 18,
+        'dispatched' => 4,
+        'received_for_courier' => 4,
+        'first_closed_address' => 16,
+        'second_closed_address' => 16,
+        'back_in_route' => 16,
+        'incomplete_address' => 17,
+        'unexisting_address' => 17,
+        'reused_by_destinatary' => 16,
+        'unkown_destinatary' => 16,
+        'unreachable_destiny' => 16,
+        'strayed' => 19,
+        'damaged' => 19,
+        'indemnify_out_of_date' => 19,
+        'returned' => 20,
+        'retired_by' => 4,
+        'in_transit' => 21,
+        'delayed' => 21,
+        'canceled' => 22,
+      ];
+      $new_status = $shipit_statuses[pSQL($json->sub_status)];
       $order = new Order((int)$shipment->id_order);
+      #Update status in order
+      $history  = new OrderHistory();
+      $history->id_order = (int)$order->id;
+      $history->changeIdOrderState((int) $new_status, $order->id);
+      $history->save();
+      #Update status in shipit module
       if ($id_order_carrier = Db::getInstance()->getValue('SELECT MAX(`id_order_carrier`) FROM `'._DB_PREFIX_.'order_carrier` WHERE `id_order` = '.(int)$shipment->id_order)) {
         $order_carrier = new OrderCarrier((int)$id_order_carrier);
         $old_tracking = $order_carrier->tracking_number;
