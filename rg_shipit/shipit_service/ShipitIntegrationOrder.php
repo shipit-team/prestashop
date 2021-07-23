@@ -42,23 +42,25 @@
     function orders($order) {
       $client = new ShipitHttpClient($this->base.'/orders', $this->headers);
       $response = $client->post(['order' => $order]);
-      if ($response->getStatusCode() != 200) {
+      if ($response != null && $response->getStatusCode() != 200) {
         ShipitTools::log('PrestaShop ('._PS_VERSION_.'), orders response: '.print_r($response,true));
+        return false;
       } else {
         $order = json_decode($response->getBody());
+        return $order->id;
       }
-      return $order->id;
     }
 
     function massiveOrders($order = array()) {
       $client = new ShipitHttpClient($this->base.'/orders/massive', $this->headers);
       $response = $client->post($order);
-      if ($response->getStatusCode() != 200) {
+      if ($response != null && $response->getStatusCode() != 200) {
         ShipitTools::log('PrestaShop ('._PS_VERSION_.'), orders massive response: '.print_r($response,true));
+        return false;
       } else {
         $order = json_decode($response->getBody());
+        return $order;
       }
-      return $order;
     }
   }
 ?>

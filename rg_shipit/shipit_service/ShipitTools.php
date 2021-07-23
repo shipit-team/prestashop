@@ -367,9 +367,12 @@ class ShipitTools
     public static function getClientName($orderId) {
       $shipitService = new ShipitServices();
       $service = $shipitService->getByReference($orderId);
-      $clientName = ($service->code == 'shipit' ? null : $service->desc);
-
-      return $clientName;
+      if(empty($service)){
+        return null;
+      } else {
+        $clientName = ($service->code == 'shipit' ? null : $service->desc);
+        return $clientName;
+      }
     }
 
     public static function getCourierId($email, $token, $live, $clientName) {

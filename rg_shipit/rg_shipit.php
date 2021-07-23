@@ -25,7 +25,7 @@ class Rg_Shipit extends ShipitCore
   {
     $this->name = 'rg_shipit';
     $this->tab = 'shipping_logistics';
-    $this->version = '1.4.2';
+    $this->version = '1.5.0';
     $this->author = 'Shipit';
     $this->author_link = 'https://shipit.cl/';
     $this->need_instance = 1;
@@ -988,6 +988,7 @@ class Rg_Shipit extends ShipitCore
       $error = $shipit_id = false;
       $errors = array();
       $order = new Order((int)$id_order);
+      ShipitTools::log('Order rg' . print_r($order, true));
       $ProductDetailObject = new OrderDetail;
       $products = $ProductDetailObject->getList((int)$id_order);
       $address = new Address((int)$order->id_address_delivery);
@@ -1522,20 +1523,49 @@ class Rg_Shipit extends ShipitCore
   }
 
   public function processWebhook($json)
-  {
+  { 
+    $order = new Order((int)$json->seller_order_id);
+    $shipit_statuses = [
+      'in_route' => 14,
+      'delivered' => 5,
+      'by_retired' => 15,
+      'failed' => 16,
+      'indemnify' => 18,
+      'dispatched' => 4,
+      'received_for_courier' => 4,
+      'first_closed_address' => 16,
+      'second_closed_address' => 16,
+      'back_in_route' => 16,
+      'incomplete_address' => 17,
+      'unexisting_address' => 17,
+      'reused_by_destinatary' => 16,
+      'unkown_destinatary' => 16,
+      'unreachable_destiny' => 16,
+      'strayed' => 19,
+      'damaged' => 19,
+      'indemnify_out_of_date' => 19,
+      'returned' => 20,
+      'retired_by' => 4,
+      'in_transit' => 21,
+      'delayed' => 21,
+      'canceled' => 22,
+    ];
+    $new_status = $shipit_statuses[pSQL($json->sub_status)];
+    $history  = new OrderHistory();
+    $history->id_order = (int)$order->id;
+    $history->changeIdOrderState((int) $new_status, $order->id);
+    $history->save();
+
     if ($id_rg_shipit_shipment = ShipitShipment::getIdShipitByShipitOrderId((int)$json->seller_order_id)) {
       $shipment = new ShipitShipment((int)$id_rg_shipit_shipment);
       $tracking = $json->tracking_number;
       $shipment->tracking = pSQL($tracking);
-      Db::getInstance()->update('orders', array('shipping_number' => pSQL($tracking)), 'id_order=' . (int)$shipment->seller_order_id);
-      Db::getInstance()->update(
-        'rg_shipit_shipment',
-        array(
-          'courier' => $json->courier_for_client,
-          'status' => pSQL($json->sub_status),
-          'tracking' => pSQL($tracking),
-        ),
-        'id_order=' . (int)$shipment->id_order
+      Db::getInstance()->update('orders', array('shipping_number' => pSQL($tracking)), 'id_order='.(int)$shipment->seller_order_id);
+      Db::getInstance()->update('rg_shipit_shipment',array(
+        'courier' => $json->courier_for_client,
+        'status' => pSQL($json->sub_status),
+        'tracking' => pSQL($tracking),),
+        'id_order='.(int)$shipment->id_order
       );
       $order = new Order((int)$shipment->id_order);
       if ($id_order_carrier = Db::getInstance()->getValue('SELECT MAX(`id_order_carrier`) FROM `' . _DB_PREFIX_ . 'order_carrier` WHERE `id_order` = ' . (int)$shipment->id_order)) {
