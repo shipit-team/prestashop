@@ -32,35 +32,36 @@
     function massivePackages($packages = array()) {
       $client = new ShipitHttpClient($this->base.'/packages/mass_create', $this->headers);
       $response = $client->post($packages);
-      if ($response->getStatusCode() != 200) {
+      if ($response != null && $response->getStatusCode() != 200) {
         ShipitTools::log('PrestaShop ('._PS_VERSION_.'), massive package response: '.print_r($response,true));
+        return false;
       } else {
         $package = json_decode($response->getBody());
+        return $package;
       }
-      return $package;
     }
 
     function orders($order = array()) {
       $client = new ShipitHttpClient($this->base.'/orders', $this->headers);
       $response = $client->post($order);
-      if ($response->getStatusCode() != 200) {
+      if ($response != null && $response->getStatusCode() != 200) {
         ShipitTools::log('PrestaShop ('._PS_VERSION_.'), orders response: '.print_r($response,true));
       } else {
         $order = json_decode($response->getBody());
+        return $order;
       }
-      return $order;
     }
 
     function shipments($shipment) {
       $client = new ShipitHttpClient($this->base.'/shipments', $this->headers);
       $response = $client->post(['shipment' => $shipment]);
-      if ($response->getStatusCode() != 200) {
+      if ($response != null && $response->getStatusCode() != 200) {
         ShipitTools::log('PrestaShop ('._PS_VERSION_.'), shipment response: '.print_r($response,true));
-        ShipitBugsnag::bugsnagLog($response, 'shipment', $shipment['reference']);
+        return false;
       } else {
         $shipment = json_decode($response->getBody());
+        return $shipment->id;
       }
-      return $shipment->id;
     }
 
     function administrative() {
