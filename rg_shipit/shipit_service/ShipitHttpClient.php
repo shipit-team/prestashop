@@ -1,7 +1,7 @@
 <?php
   use GuzzleHttp\Client;
   use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Message\Response;
+  use GuzzleHttp\Message\Response;
 
 class ShipitHttpClient {
     public $endpoint = '';
