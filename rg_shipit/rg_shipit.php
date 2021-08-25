@@ -25,7 +25,7 @@ class Rg_Shipit extends ShipitCore
   {
     $this->name = 'rg_shipit';
     $this->tab = 'shipping_logistics';
-    $this->version = '1.5.0';
+    $this->version = '1.6.0';
     $this->author = 'Shipit';
     $this->author_link = 'https://shipit.cl/';
     $this->need_instance = 1;
@@ -1526,29 +1526,29 @@ class Rg_Shipit extends ShipitCore
   { 
     $order = new Order((int)$json->seller_order_id);
     $shipit_statuses = [
-      'in_route' => 14,
+      'in_route' => 140,
       'delivered' => 5,
-      'by_retired' => 15,
-      'failed' => 16,
-      'indemnify' => 18,
+      'by_retired' => 141,
+      'failed' => 142,
+      'indemnify' => 144,
       'dispatched' => 4,
       'received_for_courier' => 4,
-      'first_closed_address' => 16,
-      'second_closed_address' => 16,
-      'back_in_route' => 16,
-      'incomplete_address' => 17,
-      'unexisting_address' => 17,
-      'reused_by_destinatary' => 16,
-      'unkown_destinatary' => 16,
-      'unreachable_destiny' => 16,
-      'strayed' => 19,
-      'damaged' => 19,
-      'indemnify_out_of_date' => 19,
-      'returned' => 20,
+      'first_closed_address' => 142,
+      'second_closed_address' => 142,
+      'back_in_route' => 142,
+      'incomplete_address' => 143,
+      'unexisting_address' => 143,
+      'reused_by_destinatary' => 142,
+      'unkown_destinatary' => 142,
+      'unreachable_destiny' => 142,
+      'strayed' => 145,
+      'damaged' => 145,
+      'indemnify_out_of_date' => 145,
+      'returned' => 146,
       'retired_by' => 4,
-      'in_transit' => 21,
-      'delayed' => 21,
-      'canceled' => 22,
+      'in_transit' => 147,
+      'delayed' => 147,
+      'canceled' => 148,
     ];
     $new_status = $shipit_statuses[pSQL($json->sub_status)];
     $history  = new OrderHistory();
