@@ -25,7 +25,7 @@ class Rg_Shipit extends ShipitCore
   {
     $this->name = 'rg_shipit';
     $this->tab = 'shipping_logistics';
-    $this->version = '1.6.0';
+    $this->version = '2.0.0';
     $this->author = 'Shipit';
     $this->author_link = 'https://shipit.cl/';
     $this->need_instance = 1;
@@ -1522,8 +1522,8 @@ class Rg_Shipit extends ShipitCore
     }
   }
 
-  public function processWebhook($json)
-  { 
+  public function processStatus($json)
+  {
     $order = new Order((int)$json->seller_order_id);
     $shipit_statuses = [
       'in_route' => 140,
@@ -1624,6 +1624,11 @@ class Rg_Shipit extends ShipitCore
     }
   }
 
+  public function processEmergencyRates($json)
+  {
+    ShipitTools::log('receiving emergency rates ' . print_r($json, true));
+
+  }
 
   /**
    * Get all global settings
