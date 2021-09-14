@@ -30,6 +30,7 @@ require(dirname(__FILE__).'/ShipitSource.php');
 require(dirname(__FILE__).'/ShipitHttpClient.php');
 require(dirname(__FILE__).'/ShipitIntegrationCore.php');
 require(dirname(__FILE__).'/ShipitIntegrationOrder.php');
+require(dirname(__FILE__).'/ShipitEmergencyRate.php');
 require_once(dirname(__FILE__).'/../libraries/ShipitLAFFPack.php');
 
 class ShipitCore extends CarrierModule
@@ -269,9 +270,9 @@ class ShipitCore extends CarrierModule
         $results = $api->rates($params,(int)$this->config['SHIPIT_DISPATCH_ALGORITHM']);
 
         if (!$results) {
-            ShipitTools::log('calculatePricing: '.print_r($errors, true));
+          ShipitTools::log('calculatePricing: '.print_r($errors, true));
 
-            return false;
+          return false;
         }
 
         return $results;

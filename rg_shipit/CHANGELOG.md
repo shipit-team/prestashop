@@ -1,5 +1,10 @@
 # CHANGELOG
 
+= 2.0.0 =
+*show emergency rates from database
+*add endpoint to receive emergency rates
+*store emergency rates in dabatabase
+
 = 1.4.2 =
 *fix non shipit orders are shipped
 
