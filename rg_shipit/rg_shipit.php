@@ -1624,6 +1624,11 @@ class Rg_Shipit extends ShipitCore
     }
   }
 
+  public function processEmergencyRates($emergencyRates)
+  {
+    $emergencyRate = new ShipitEmergencyRate();
+    $emergencyRate->setEmergencyRates($emergencyRates);
+  }
 
   /**
    * Get all global settings

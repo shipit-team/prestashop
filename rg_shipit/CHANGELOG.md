@@ -1,5 +1,9 @@
 # CHANGELOG
 
+= 2.0.0 =
+*add endopint to receive emergency rates
+*store emergency rates in dabatabase
+
 = 1.4.2 =
 *fix non shipit orders are shipped
 
