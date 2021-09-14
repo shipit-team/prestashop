@@ -25,7 +25,7 @@ class Rg_Shipit extends ShipitCore
   {
     $this->name = 'rg_shipit';
     $this->tab = 'shipping_logistics';
-    $this->version = '1.6.0';
+    $this->version = '2.0.0';
     $this->author = 'Shipit';
     $this->author_link = 'https://shipit.cl/';
     $this->need_instance = 1;
@@ -1624,6 +1624,11 @@ class Rg_Shipit extends ShipitCore
     }
   }
 
+  public function processEmergencyRates($emergencyRates)
+  {
+    $emergencyRate = new ShipitEmergencyRate();
+    $emergencyRate->setEmergencyRates($emergencyRates);
+  }
 
   /**
    * Get all global settings

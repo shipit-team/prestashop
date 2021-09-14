@@ -86,7 +86,16 @@ $sql[] = 'INSERT INTO `ps_order_state_lang` (
             (146, 1, "Devuelto", ""),
             (147, 1, "En tránsito", ""),
             (148, 1, "Envío cancelado", "");';
-            
+
+$sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'rg_shipit_emergency_rates` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `region` int(11) NOT NULL,
+  `price` int(11) NOT NULL,
+  `date_add` datetime NOT NULL,
+  `date_upd` datetime NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8;';
+
 foreach ($sql as $query) {
     if (Db::getInstance()->execute($query) == false) {
         return false;

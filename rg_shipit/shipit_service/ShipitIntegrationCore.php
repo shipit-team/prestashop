@@ -124,12 +124,14 @@
       $response = $client->allow_redirects_post($params);
       if ($response->getStatusCode() != 200) {
         ShipitTools::log('PrestaShop ('._PS_VERSION_.'), rates response: '.print_r($response,true));
+        $emergency_rates = new ShipitEmergencyRate();
+        $result = json_decode($emergency_rates->getEmergencyRates($params['parcel']['destiny_id']));
       } else {
         $result = json_decode($response->getBody());
       }
 
       $costs = array();
-      if ($best_price) {
+      if ($best_price && $response->getStatusCode() == 200) {
           $costs['shipit'] = (float)$result->lower_price->price;
       } else {
           foreach ($result->prices as $ship) {
@@ -138,7 +140,6 @@
             }
           }
       }
-
       return $costs;
     }
 

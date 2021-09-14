@@ -1,5 +1,6 @@
 <?php
   use GuzzleHttp\Client;
+  use GuzzleHttp\Exception\ConnectException;
   use GuzzleHttp\Exception\RequestException;
   use GuzzleHttp\Message\Response;
 
@@ -8,7 +9,7 @@ class ShipitHttpClient {
     public $headers = array();
     public $client;
 
-    public function __construct($endpoint, $headers) {
+    public function __construct($endpoint = null, $headers = null) {
       $this->endpoint = $endpoint;
       $this->headers = $headers;
       $this->client = new Client();
@@ -32,12 +33,9 @@ class ShipitHttpClient {
           ,['json' => $body
           ,'headers' => $this->headers
           ,'allow_redirects'=> ['strict'=>true]]);
-      
         return $response;
-            
-        // Here the code for successful request
-    
-        } catch (RequestException $e) 
+
+        } catch (RequestException $e)
           {
             if ($e->hasResponse()){
               return $e->getResponse();
@@ -48,6 +46,7 @@ class ShipitHttpClient {
       }
 
     public function allow_redirects_post($body) {
+      try {
       $response = $this->client->post(
         $this->endpoint
         ,['json' => $body
@@ -55,6 +54,11 @@ class ShipitHttpClient {
         ,'allow_redirects'=> ['strict'=>true]]);
 
       return $response;
+      } catch (ConnectException $e) {
+          return new ShipitHttpClient();
+      } catch (RequestException $e) {
+          return new ShipitHttpClient();
+      }
     }
 
     public function patch($body = array()) {
@@ -77,5 +81,8 @@ class ShipitHttpClient {
 
       return $response;
     }
+
+    public function getStatusCode() {
+      return 500;
+    }
   }
-?>
