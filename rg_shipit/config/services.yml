@@ -1,0 +1,3 @@
+services:
+  'Shipit\Controllers\Admin\CustomOrdersController':
+     class: Shipit\Controller\Admin\CustomOrdersController

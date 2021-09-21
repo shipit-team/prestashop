@@ -11,6 +11,10 @@ class ComposerStaticInitb2452d5cc4c33808d8056f856613ffef
     );
 
     public static $prefixLengthsPsr4 = array (
+        'S' => 
+        array (
+            'Shipit\\' => 7,
+        ),
         'R' => 
         array (
             'React\\Promise\\' => 14,
@@ -24,6 +28,10 @@ class ComposerStaticInitb2452d5cc4c33808d8056f856613ffef
     );
 
     public static $prefixDirsPsr4 = array (
+        'Shipit\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/src',
+        ),
         'React\\Promise\\' => 
         array (
             0 => __DIR__ . '/..' . '/react/promise/src',
@@ -42,11 +50,16 @@ class ComposerStaticInitb2452d5cc4c33808d8056f856613ffef
         ),
     );
 
+    public static $classMap = array (
+        'Rg_Shipit' => __DIR__ . '/../..' . '/rg_shipit.php',
+    );
+
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
             $loader->prefixLengthsPsr4 = ComposerStaticInitb2452d5cc4c33808d8056f856613ffef::$prefixLengthsPsr4;
             $loader->prefixDirsPsr4 = ComposerStaticInitb2452d5cc4c33808d8056f856613ffef::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInitb2452d5cc4c33808d8056f856613ffef::$classMap;
 
         }, null, ClassLoader::class);
     }

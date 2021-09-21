@@ -1,0 +1,6 @@
+shipit:
+    path: /shipit/
+    methods: [GET, POST]
+    defaults:
+      _controller: 'Shipit\Controllers\Admin\CustomOrdersController:indexAction'
+      _disable_module_prefix: true
