@@ -1,4 +1,6 @@
 # CHANGELOG
+= 2.1.0 =
+*adapt plugin to work with prestashop greater than 1770
 
 = 2.0.0 =
 *show emergency rates from database

@@ -11,6 +11,12 @@
         "php": ">=5.6.0",
         "guzzlehttp/guzzle": "~5.0@dev"
     },
+    "autoload" : {
+      "psr-4" : {"Shipit\\" : "src/"},
+      "classmap": ["rg_shipit.php"],
+      "config": {"prepend-autoloader" : false},
+      "type"  : "prestashop-module"
+   },
     "config": {
         "preferred-install": "dist",
         "prepend-autoloader": false
