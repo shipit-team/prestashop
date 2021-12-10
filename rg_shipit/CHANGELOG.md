@@ -1,4 +1,7 @@
 # CHANGELOG
+= 2.2.0 =
+*change shipit logo
+
 = 2.1.0 =
 *adapt plugin to work with prestashop greater than 1770
 
