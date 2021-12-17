@@ -80,6 +80,8 @@ class ShipitCore extends \CarrierModule
 
                     // Initialize ShipitLAFFPack.
                     $lap = new ShipitLAFFPack();
+                    $boxify = new ShipitBoxify();
+                    $boxify_response = $boxify->calculate(['shipment' => $boxes]);
 
                     // Start packing our nice boxes.
                     $lap->pack($boxes);

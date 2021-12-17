@@ -9,7 +9,7 @@
  */
 
 require_once(dirname(__FILE__) . '/../../config/config.inc.php');
-include_once(dirname(__FILE__) . '/rg_shipit.php');
+include_once('rg_shipit.php');
 
 $module = new Rg_Shipit();
 

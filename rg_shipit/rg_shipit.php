@@ -34,6 +34,8 @@ use Shipit\Service\ShipitPrice;
 use Shipit\Service\ShipitCityTrack;
 use Shipit\Service\ShipitOrigin;
 use Shipit\Service\ShipitOrder;
+use Shipit\Service\ShipitBoxify;
+use Shipit\Service\ShipitEmergencyRate;
 use PrestaShop\PrestaShop\Core\Grid\Action\Bulk\Type\SubmitBulkAction;
 
 class Rg_Shipit extends ShipitCore

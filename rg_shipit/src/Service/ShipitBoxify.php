@@ -1,7 +1,7 @@
 <?php
 namespace Shipit\Service;
 
-  class Boxify {
+  class ShipitBoxify {
     public $url = '';
     public $email = '';
     public $token = '';
@@ -15,16 +15,16 @@ namespace Shipit\Service;
       );
     }
 
-    function calculate($shipment = array()) {
-      $client = new HttpClient($this->base . '/packs', $this->headers);
-      $response = $client->post($shipment);
-      $data = array();
-      if (is_wp_error($response)) {
-        echo 'Error al conectar con API.';
+    function calculate($sizes = array()) {
+      $client = new ShipitHttpClient($this->base.'/packs', $this->headers);
+      $response = $client->post($sizes);
+      if ($response->getStatusCode() != 200) {
+        ShipitTools::log('PrestaShop ('._PS_VERSION_.'), package response: '.print_r($response,true));
       } else {
-        $data = json_decode($response['body']);
+        $sizes = json_decode($response->getBody());
       }
-      return (array)$data->packing_measures;
+      return $sizes;
     }
+
   }
 ?>
