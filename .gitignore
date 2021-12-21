@@ -1,1 +1,11 @@
 .DS_Store
+./bin
+./myclabs
+./phar-io
+./phpdocumentor
+./phpspec
+./phpunit
+./sebastian
+./symfony
+./theseer
+./webmozart
