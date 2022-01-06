@@ -81,7 +81,7 @@ class ShipitCore extends \CarrierModule
                     // Initialize ShipitLAFFPack.
                     $lap = new ShipitLAFFPack();
                     $boxify = new ShipitBoxify();
-                    $boxify_response = $boxify->calculate(['shipment' => $boxes]);
+                    $boxify_response = $boxify->calculate(['packages' => $boxes]);
 
                     // Start packing our nice boxes.
                     $lap->pack($boxes);
@@ -89,10 +89,14 @@ class ShipitCore extends \CarrierModule
                     $c_size = $lap->get_container_dimensions();
                     $ps_dimension_unit = Configuration::get('PS_DIMENSION_UNIT');
                     $ps_weight_unit = Configuration::get('PS_WEIGHT_UNIT');
-                    $width = ShipitTools::convertToCm($ps_dimension_unit, $c_size['width']);
-                    $height = ShipitTools::convertToCm($ps_dimension_unit, $c_size['height']);
-                    $depth = ShipitTools::convertToCm($ps_dimension_unit, $c_size['length']);
-                    $weight = ShipitTools::convertToKg($ps_weight_unit, $weight);
+                    //$width = ShipitTools::convertToCm($ps_dimension_unit, $c_size['width']);
+                    //$height = ShipitTools::convertToCm($ps_dimension_unit, $c_size['height']);
+                    //$depth = ShipitTools::convertToCm($ps_dimension_unit, $c_size['length']);
+                    //$weight = ShipitTools::convertToKg($ps_weight_unit, $weight);
+                    $width = $boxify_response['width'];
+                    $height = $boxify_response['height'];
+                    $depth = $boxify_response['length'];
+                    $weight = $boxify_response['weight'];
                     // Shipit does not allow empty fields.
                     if (!$width || !$height || !$depth || !$weight) {
                       // ShipitTools::log('updateCache: products without dimensions and/or weight (width => '.$width.', height => '.$height.', depth => '.$depth.', weight => '.$weight.').');
