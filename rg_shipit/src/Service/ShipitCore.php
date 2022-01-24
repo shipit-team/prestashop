@@ -124,7 +124,7 @@ class ShipitCore extends \CarrierModule
 
             $dest_code = ShipitLists::searchCityId($address->city);
 
-            $cache = $this->getCostsByCarrier($cache, $dest_code, $weight, $height, $width, $depth);
+            $cache = $this->getCostsByCarrier($cache, $dest_code, $weight, $height, $width, $depth, $cart);
         }
 
         return $cache->save();
@@ -206,7 +206,7 @@ class ShipitCore extends \CarrierModule
      * @param  [float]  $depth       The depth of the product in cm
      * @return [array]  Return empty if no services
      */
-    protected function getServicesCost($destination, $weight, $height, $width, $depth)
+    protected function getServicesCost($destination, $weight, $height, $width, $depth, $cart)
     {
         $variables = array(
             'destination' => $destination,
@@ -216,7 +216,7 @@ class ShipitCore extends \CarrierModule
             'depth' => $depth
         );
 
-        $services = $this->calculatePricing($variables);
+        $services = $this->calculatePricing($variables, $cart);
 
         return $services;
     }
@@ -234,7 +234,7 @@ class ShipitCore extends \CarrierModule
      * @param  array    $variables
      * @return mixed
      */
-    private function calculatePricing(array $variables)
+    private function calculatePricing(array $variables, $cart)
     {
         $params = array(
             'parcel' => array(
@@ -262,10 +262,10 @@ class ShipitCore extends \CarrierModule
         return $results;
     }
 
-    public function getCostsByCarrier($cache, $dest_code, $weight, $height, $width, $depth) {
+    public function getCostsByCarrier($cache, $dest_code, $weight, $height, $width, $depth, $cart) {
         if ($dest_code) {
             // Get the shipping costs available.
-            $services_cost = $this->getServicesCost($dest_code, $weight, $height, $width, $depth);
+            $services_cost = $this->getServicesCost($dest_code, $weight, $height, $width, $depth, $cart);
 
             // If there is a services cost available.
             if ($services_cost) {
