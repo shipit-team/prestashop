@@ -1,4 +1,7 @@
 # CHANGELOG
+= 3.0.0 =
+*add total amount to parcel
+
 = 2.2.0 =
 *change shipit logo
 
