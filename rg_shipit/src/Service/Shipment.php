@@ -26,6 +26,9 @@ namespace Shipit\Service;
     function build() {
       return array(
         'reference' => $this->getReference(),
+        'platform' => 3,
+        'kind_of_order' => 2,
+        'kind' => 2,
         'items' => $this->getItems(),
         'seller' => $this->getSeller(),
         'sizes' => $this->getSizes(),

@@ -112,6 +112,9 @@ class AdminOrdersController extends AdminOrdersControllerCore
 
                     $shipit_package = [
                         'mongo_order_seller' => 'prestashop',
+                        'platform' => 3,
+                        'kind' => 2,
+                        'kind_of_order' => 2,
                         'reference' => (int)$order->id,
                         'full_name' => $address->firstname . ' ' . $address->lastname,
                         'email' => $customer->email,
