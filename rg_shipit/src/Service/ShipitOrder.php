@@ -77,6 +77,7 @@ namespace Shipit\Service;
       return array(
         'platform' => $this->getPlatform(),
         'kind' => $this->getKind(),
+        'kind_of_order' => 2,
         'reference' => $this->getReference(),
         'items' => $this->getItems(),
         'sandbox' => $this->getSandbox(),

@@ -20,4 +20,4 @@
 
 # Especificaciones
 
-1. el plugin es estable entre las versiones 1.6.1.1 y 1.7.6.9 de Prestashop.
+1. el plugin es estable entre las versiones 1.7.7.0 y 1.7.8.0 de Prestashop.

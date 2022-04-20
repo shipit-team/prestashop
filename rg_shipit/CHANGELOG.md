@@ -1,4 +1,7 @@
 # CHANGELOG
+= 2.3.0 =
+*add seller id to orders and shipments
+
 = 2.2.0 =
 *change shipit logo
 

@@ -108,6 +108,9 @@ class CustomOrdersController extends FrameworkBundleAdminController
           $shipit_package = [
             'mongo_order_seller' => 'prestashop',
             'reference' => (int)$order->id,
+            'platform' => 3,
+            'kind' => 2,
+            'kinf_of_order' => 2,
             'full_name' => $address->firstname . ' ' . $address->lastname,
             'email' => $customer->email,
             'items_count' => $items,
