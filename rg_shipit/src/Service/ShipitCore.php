@@ -138,9 +138,9 @@ class ShipitCore extends \CarrierModule
             $s_width = (float)Configuration::get('SHIPIT_SET_VALUE_WIDTH');
             $s_height = (float)Configuration::get('SHIPIT_SET_VALUE_HEIGHT');
             $s_depth = (float)Configuration::get('SHIPIT_SET_VALUE_DEPTH');
-            $product_width = (float)Configuration::get('width');
-            $product_height = (float)Configuration::get('height');
-            $product_depth = (float)Configuration::get('depth');
+            $product_width = (float)$product['width'];
+            $product_height = (float)$product['height'];
+            $product_depth = (float)$product['depth'];
 
             switch (Configuration::get('SHIPIT_SET_DIMENSIONS')) {
                 case 1: // Set the specified dimensions.
