@@ -1,4 +1,7 @@
 # CHANGELOG
+= 2.3.1 =
+*fix send item dimensions
+
 = 2.3.0 =
 *add seller id to orders and shipments
 
