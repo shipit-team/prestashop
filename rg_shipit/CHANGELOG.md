@@ -1,4 +1,7 @@
 # CHANGELOG
+= 2.3.2 =
+*update process webhook method
+
 = 2.3.1 =
 *fix send item dimensions
 
