@@ -22,7 +22,7 @@ if ($module->active && Tools::getValue('secure_key') == $module->secure_key) {
       if (isset($json->configuration->rates->zones)) {
         $module->processEmergencyRates($json);
       } else {
-        $module->processStatus($json);
+        $module->processWebhook($json);
       }
       die('1');
     }
