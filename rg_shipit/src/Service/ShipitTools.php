@@ -399,7 +399,11 @@ class ShipitTools
       $aMatch = array();
       $pattern = '/([a-z]|[!"$%&ñÑ()=#,.])\s*\d{1,5}/i';
       preg_match($pattern, $streetStr, $aMatch);
-      $number = preg_replace('/\D/', '', $aMatch[0]);
+      if (isset($aMatch[0])) {
+        $number = preg_replace('/\D/', '', $aMatch[0]);
+      } else {
+        $number = "S/N";
+      }
       $splitedAddress = explode($number, $streetStr);
       $street = ltrim(preg_replace('/[#$%-]/', '', $splitedAddress[0]));
       $numberAddition = sizeof($splitedAddress) > 1 ? $splitedAddress[1] : "";
