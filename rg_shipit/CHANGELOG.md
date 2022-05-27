@@ -1,4 +1,7 @@
 # CHANGELOG
+= 2.3.3 =
+*validate address number
+
 = 2.3.2 =
 *update process webhook method
 
