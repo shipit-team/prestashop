@@ -135,7 +135,7 @@ namespace Shipit\Service;
       $costs = array();
       if ($best_price && $response->getStatusCode() == 200) {
           $costs['shipit'] = (float)$result->lower_price->price;
-      } else {
+      } elseif (!empty($result)) {
           foreach ($result->prices as $ship) {
             if ($ship->available_to_shipping) {
               $costs[isset($ship->courier->name) ? $ship->courier->name : $ship->original_courier] = (float)$ship->price;

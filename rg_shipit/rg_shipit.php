@@ -34,6 +34,7 @@ use Shipit\Service\ShipitPrice;
 use Shipit\Service\ShipitCityTrack;
 use Shipit\Service\ShipitOrigin;
 use Shipit\Service\ShipitOrder;
+use Shipit\Service\ShipitEmergencyRate;
 use PrestaShop\PrestaShop\Core\Grid\Action\Bulk\Type\SubmitBulkAction;
 
 class Rg_Shipit extends ShipitCore
@@ -47,7 +48,7 @@ class Rg_Shipit extends ShipitCore
   {
     $this->name = 'rg_shipit';
     $this->tab = 'shipping_logistics';
-    $this->version = '2.3.3';
+    $this->version = '2.4.0';
     $this->author = 'Shipit';
     $this->author_link = 'https://shipit.cl/';
     $this->need_instance = 1;
