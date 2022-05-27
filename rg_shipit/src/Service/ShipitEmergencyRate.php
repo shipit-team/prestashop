@@ -1,4 +1,7 @@
 <?php
+  namespace Shipit\Service;
+  use PrestaShop\PrestaShop\Adapter\Entity\DbQuery;
+  use PrestaShop\PrestaShop\Adapter\Entity\Db;
   class ShipitEmergencyRate {
     public $region_id = '';
     public $price = '';
@@ -765,25 +768,30 @@
       $sql->from('rg_shipit_emergency_rates');
       $sql->where('region = '.$region_id);
       $result = Db::getInstance()->executeS($sql);
-      $price = $result[0]['price'];
-      $emergencyRate = array(
-        'prices' =>  [ array(
-          'courier' => array(
-            'name' => 'shipit'
-          ),
-          'name' => 'DIA HABIL SIGUIENTE',
-          'price' => $price,
-          'days' => 1,
-          'available_to_shipping' => true,
-          'original_courier' => 'shipit',
-          'is_payable' => '',
-          'discount' => array(
-            'tota' => 0,
-            'progonal_price' => $price,
-            'shipment_discounts' => array()
-          )
-        )]
-        );
+      if ($result){
+        $price = $result[0]['price'];
+        $emergencyRate = array(
+          'prices' =>  [ array(
+            'courier' => array(
+              'name' => 'shipit'
+            ),
+            'name' => 'DIA HABIL SIGUIENTE',
+            'price' => $price,
+            'days' => 1,
+            'available_to_shipping' => true,
+            'original_courier' => 'shipit',
+            'is_payable' => '',
+            'discount' => array(
+              'tota' => 0,
+              'progonal_price' => $price,
+              'shipment_discounts' => array()
+            )
+          )]
+          );
+      } else {
+        $emergencyRate = [];
+      }
+
     return json_encode($emergencyRate);
     }
 

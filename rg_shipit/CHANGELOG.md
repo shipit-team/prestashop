@@ -1,4 +1,7 @@
 # CHANGELOG
+= 2.4.0 =
+*Validar flujo de las tarifas de emergencia cuando no existan datos persistidos.
+
 = 2.3.3 =
 *validate address number
 
