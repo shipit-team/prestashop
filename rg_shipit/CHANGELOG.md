@@ -1,4 +1,7 @@
 # CHANGELOG
+= 3.0.0 =
+*Implementar fulfillment para v4.
+
 = 2.4.0 =
 *Validar flujo de las tarifas de emergencia cuando no existan datos persistidos.
 

@@ -44,11 +44,13 @@ class CustomOrdersController extends FrameworkBundleAdminController
       $massive_orders = array();
       $api_order = new ShipitIntegrationOrder($this->configuration->get('SHIPIT_EMAIL'), $this->configuration->get('SHIPIT_TOKEN'), 1);
       $integrationseller = $api_order->setting();
-
+      $core = new ShipitIntegrationCore($this->configuration->get('SHIPIT_EMAIL'), $this->configuration->get('SHIPIT_TOKEN'), 4);
+      $company = $core->administrative();
+      $skus = array();
+      if ($company->service->name == 'fulfillment') {
+        $skus = $core->skus();
+      }
       foreach ($orders_bulk_ids as $id_order) {
-
-        $core = new ShipitIntegrationCore($this->configuration->get('SHIPIT_EMAIL'), $this->configuration->get('SHIPIT_TOKEN'), 4);
-        $company = $core->administrative();
         $order = new Order((int)$id_order);
         $ProductDetailObject = new OrderDetail;
         $products = $ProductDetailObject->getList((int)$id_order);
@@ -56,8 +58,19 @@ class CustomOrdersController extends FrameworkBundleAdminController
         $customer = new Customer((int)$order->id_customer);
         $items = 0;
         $insuranceProducts = '';
+        $inventory = array();
         foreach ($products as $prod) {
-          $inventory[] = (object) array('sku_id' => $prod['product_reference'], 'amount' => $prod['product_quantity'], 'id' => $prod['product_id'], 'description' => $prod['product_name'], 'warehouse_id' => 1);
+          if (!empty($skus)) {
+            $sku = $prod['product_reference'] != '' ? $prod['product_reference'] : $prod['product_id'];
+            foreach ($skus as $skuObject) {
+              if (strtolower($skuObject->name) == strtolower($sku)) {
+                $inventory[] = (object) array('sku_id' => $skuObject->id
+                                              , 'amount' => $prod['product_quantity']
+                                              , 'description' => $skuObject->description
+                                              , 'warehouse_id' => $skuObject->warehouse_id);
+              }
+            }
+          }
           $items += $prod['product_quantity'];
           if ($insuranceProducts != '') $insuranceProducts .= ',';
           $insuranceProducts .=  $prod['product_name'];
@@ -102,41 +115,6 @@ class CustomOrdersController extends FrameworkBundleAdminController
           null,
           'predeterminado'
         );
-
-        if ($integrationseller->configuration->automatic_delivery == true) {
-
-          $shipit_package = [
-            'mongo_order_seller' => 'prestashop',
-            'reference' => (int)$order->id,
-            'platform' => 3,
-            'kind' => 2,
-            'kinf_of_order' => 2,
-            'full_name' => $address->firstname . ' ' . $address->lastname,
-            'email' => $customer->email,
-            'items_count' => $items,
-            'cellphone' => $address->phone_mobile,
-            'is_payable' => false,
-            'packing' => 'Sin empaque',
-            'shipping_type' => 'Normal',
-            'destiny' => 'Domicilio',
-            'courier_for_client' => $courierClientName,
-            'sent' => false,
-            'height' => $shipit_size->width,
-            'width' => $shipit_size->height,
-            'length' => $shipit_size->length,
-            'weight' => $shipit_size->weight,
-            'address_attributes' => [
-              'commune_id' => $dest_code,
-              'street' => ($addressSplit['address'] != '') ? $addressSplit['address'] : $address->address1,
-              'number' => $addressSplit['streetNumber'],
-              'complement' => ($addressSplit['numberAddition'] ? $addressSplit['numberAddition'] : '') . ($address->address2 ? ' ' . $address->address2 : '')
-            ],
-            'insurance_attributes' => $shipit_insurance,
-            'inventory_activity' => ['inventory_activity_orders_attributes' => $inventory]
-          ];
-
-          array_push($massive_orders, $shipit_package);
-        } else {
           $shipit_order = new ShipitOrder(
             3,
             2,
@@ -162,12 +140,11 @@ class CustomOrdersController extends FrameworkBundleAdminController
           );
 
           array_push($massive_orders, $shipit_order);
-        }
       }
       $errors = array();
       if ($integrationseller->configuration->automatic_delivery == true) {
-        $api_core = new ShipitIntegrationCore($this->configuration->get('SHIPIT_EMAIL'), $this->configuration->get('SHIPIT_TOKEN'), 2);
-        $response = $api_core->massivePackages(['packages' => $massive_orders]);
+        $api_core = new ShipitIntegrationCore($this->configuration->get('SHIPIT_EMAIL'), $this->configuration->get('SHIPIT_TOKEN'), 4);
+        $response = $api_core->massiveShipments(['shipments' => $massive_orders]);
       } else {
         $response = $api_order->massiveOrders(['orders' => $massive_orders]);
       }

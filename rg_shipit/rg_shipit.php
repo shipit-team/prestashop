@@ -48,7 +48,7 @@ class Rg_Shipit extends ShipitCore
   {
     $this->name = 'rg_shipit';
     $this->tab = 'shipping_logistics';
-    $this->version = '2.4.0';
+    $this->version = '3.0.0';
     $this->author = 'Shipit';
     $this->author_link = 'https://shipit.cl/';
     $this->need_instance = 1;
@@ -1005,6 +1005,12 @@ class Rg_Shipit extends ShipitCore
   {
     if ($this->config['SHIPIT_ACTIVE_GENERATION']) {
     if (Tools::isSubmit('submitGenerateShipit')) {
+      $api_core = new ShipitIntegrationCore($this->config['SHIPIT_EMAIL'], $this->config['SHIPIT_TOKEN'], 4);
+      $company = $api_core->administrative();
+      $skus = array();
+      if ($company->service->name == 'fulfillment') {
+        $skus = $api_core->skus();
+      }
       $id_order = (int)$params['id_order'];
       $order = new Order((int)$id_order);
       $ProductDetailObject = new OrderDetail;
@@ -1039,14 +1045,25 @@ class Rg_Shipit extends ShipitCore
       $items = 0;
       $insuranceProducts = '';
       foreach ($products as $prod) {
-        $product = new ShipitProduct($prod['product_reference'], $prod['product_quantity'], null, null);
-        array_push($arrayProducts, $product);
+
+        if (!empty($skus)) {
+          $sku = $prod['product_reference'] != '' ? $prod['product_reference'] : $prod['product_id'];
+          foreach ($skus as $skuObject) {
+            if (strtolower($skuObject->name) == strtolower($sku)) {
+              $arrayProducts[] = (object) array('sku_id' => $skuObject->id
+                                            , 'amount' => $prod['product_quantity']
+                                            , 'description' => $skuObject->description
+                                            , 'warehouse_id' => $skuObject->warehouse_id);
+            }
+          }
+        }
         $items++;
         if ($insuranceProducts != '') $insuranceProducts .= ',';
         $insuranceProducts .=  $prod['product_name'];
       }
       $insurance = new ShipitInsurance($order->total_paid - $order->total_shipping, $id_order, $insuranceProducts, true, $this->config['SHIPIT_EMAIL'], $this->config['SHIPIT_TOKEN']);
       $shipment = new Shipment((int)$order->id, $items, $seller, $size, $courier, $destiny, $insurance, $arrayProducts);
+      ShipitTools::log('PrestaShop ('._PS_VERSION_.'), shipit_order : '.print_r($shipment,true));
       $shipit_integration_core = new ShipitIntegrationCore($this->config['SHIPIT_EMAIL'], $this->config['SHIPIT_TOKEN'], 4);
       $shipit_id = $shipit_integration_core->shipments($shipment);
       if ($shipit_id) {
@@ -1114,6 +1131,12 @@ class Rg_Shipit extends ShipitCore
 
   public function hookActionPaymentConfirmation($params)
   {
+    $api_core = new ShipitIntegrationCore($this->config['SHIPIT_EMAIL'], $this->config['SHIPIT_TOKEN'], 4);
+    $company = $api_core->administrative();
+    $skus = array();
+    if ($company->service->name == 'fulfillment') {
+      $skus = $api_core->skus();
+    }
     $id_order = (int)$params['id_order'];
     $log_url = Tools::getShopDomainSsl(true) . $this->_path . 'error_log';
     $admin_order_link = $this->context->link->getAdminLink('AdminOrders') . '&vieworder&id_order=' . (int)$params['id_order'];
@@ -1133,8 +1156,19 @@ class Rg_Shipit extends ShipitCore
       $customer = new Customer((int)$order->id_customer);
       $items = 0;
       $insuranceProducts = '';
+      $inventory = array();
       foreach ($products as $prod) {
-        $inventory[] = (object) array('sku_id' => $prod['product_reference'], 'amount' => $prod['product_quantity'], 'id' => $prod['product_id'], 'description' => $prod['product_name'], 'warehouse_id' => 1);
+        if (!empty($skus)) {
+          $sku = $prod['product_reference'] != '' ? $prod['product_reference'] : $prod['product_id'];
+          foreach ($skus as $skuObject) {
+            if (strtolower($skuObject->name) == strtolower($sku)) {
+              $inventory[] = (object) array('sku_id' => $skuObject->id
+                                            , 'amount' => $prod['product_quantity']
+                                            , 'description' => $skuObject->description
+                                            , 'warehouse_id' => $skuObject->warehouse_id);
+            }
+          }
+        }
         $items += $prod['product_quantity'];
         if ($insuranceProducts != '') $insuranceProducts .= ',';
         $insuranceProducts .=  $prod['product_name'];
@@ -1203,7 +1237,6 @@ class Rg_Shipit extends ShipitCore
         $shipit_origin,
         $shipit_destiny
       );
-
       $api_order = new ShipitIntegrationOrder($this->config['SHIPIT_EMAIL'], $this->config['SHIPIT_TOKEN'], 1);
       $integrationseller = $api_order->setting();
       $errors = array();
