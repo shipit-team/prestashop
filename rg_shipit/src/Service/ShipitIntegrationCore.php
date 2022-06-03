@@ -43,6 +43,18 @@ namespace Shipit\Service;
       }
     }
 
+    function massiveShipments($shipments) {
+      $client = new ShipitHttpClient($this->base.'/shipments/massive/import', $this->headers);
+      $response = $client->post($shipments);
+      if ($response != null && $response->getStatusCode() != 200) {
+        ShipitTools::log('PrestaShop ('._PS_VERSION_.'), shipments response: '.print_r($response,true));
+        return false;
+      } else {
+        $shipments_response = json_decode($response->getBody());
+        return $shipments_response;
+      }
+    }
+
     function orders($order = array()) {
       $client = new ShipitHttpClient($this->base.'/orders', $this->headers);
       $response = $client->post($order);
