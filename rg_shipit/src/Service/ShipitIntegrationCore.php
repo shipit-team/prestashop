@@ -16,7 +16,7 @@ namespace Shipit\Service;
         'Content-Type' => 'application/json',
         'X-Shipit-Email' => $email,
         'X-Shipit-Access-Token' => $token,
-        'Accept' => 'application/jsonapplication/vnd.shipit.v' . $version
+        'Accept' => 'application/vnd.shipit.v' . $version
       );
     }
 
