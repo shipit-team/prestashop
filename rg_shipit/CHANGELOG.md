@@ -1,4 +1,7 @@
 # CHANGELOG
+= 3.1.0 =
+*modificar a prefijos dinámicos las tablas en la instalación y desinstalación del plugin
+
 = 3.0.0 =
 *Implementar fulfillment para v4.
 

@@ -47,7 +47,7 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'rg_shipit_shipment` (
     PRIMARY KEY  (`id_rg_shipit_shipment`)
 ) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8;';
 
-$sql[] = 'INSERT INTO `ps_order_state` (
+$sql[] = 'INSERT INTO `'._DB_PREFIX_.'order_state` (
     `id_order_state`,
     `invoice`, 
     `send_email`, 
@@ -72,7 +72,7 @@ $sql[] = 'INSERT INTO `ps_order_state` (
             (147, 0, 0, "", "rgb(244 207 88)", 1, 0, 0, 1, 1, 1, 0, 0, 0),
             (148, 0, 0, "", "rgb(72 74 125)", 1, 0, 0, 1, 1, 1, 0, 0, 0);';
 
-$sql[] = 'INSERT INTO `ps_order_state_lang` (
+$sql[] = 'INSERT INTO `'._DB_PREFIX_.'order_state_lang` (
     `id_order_state`, 
     `id_lang`,
     `name`, 
