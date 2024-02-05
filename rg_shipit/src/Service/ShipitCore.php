@@ -243,7 +243,6 @@ class ShipitCore extends \CarrierModule
                 'width' => $variables['width'],
                 'weight' => $variables['weight'],
                 'type_of_destiny' => 'Domicilio',
-                'origin_id' => 308,
                 'destiny_id' => (int)$variables['destination'],
                 'rate_from' => 'prestashop'
             )
