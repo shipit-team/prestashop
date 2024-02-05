@@ -48,7 +48,7 @@ class Rg_Shipit extends ShipitCore
   {
     $this->name = 'rg_shipit';
     $this->tab = 'shipping_logistics';
-    $this->version = '3.0.0';
+    $this->version = '3.0.2';
     $this->author = 'Shipit';
     $this->author_link = 'https://shipit.cl/';
     $this->need_instance = 1;
@@ -163,7 +163,7 @@ class Rg_Shipit extends ShipitCore
       $this->registerHook('displayAdminOrderSideBottom') &&
       $this->registerHook('actionPaymentConfirmation') &&
       $this->registerHook('actionOrderGridDefinitionModifier') &&
-      $this->registerHook('additionalCustomerFormFields') &&
+     // $this->registerHook('additionalCustomerFormFields') &&
       $this->registerHook('actionObjectCarrierUpdateAfter');
 
     if (version_compare(_PS_VERSION_, '1.7.0.0', '>=') == true) {
