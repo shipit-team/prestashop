@@ -23,7 +23,7 @@ class ShipitCache extends \ObjectModel
         'primary' => 'id_cart',
         'fields' => array(
             'id_cart' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true),
-            'hash_cart' => array('type' => self::TYPE_STRING, 'validate' => 'isPasswd', 'size' => 32, 'allow_null' => true),
+            'hash_cart' => array('type' => self::TYPE_STRING, 'validate' => 'isCleanHtml', 'size' => 32, 'allow_null' => true),
             'package' => array('type' => self::TYPE_STRING, 'validate' => 'isCleanHtml', 'allow_null' => true),
             'carriers' => array('type' => self::TYPE_STRING, 'validate' => 'isCleanHtml', 'allow_null' => true)
         )
