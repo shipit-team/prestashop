@@ -80,17 +80,29 @@ class ShipitCore extends \CarrierModule
 
                     // Initialize ShipitLAFFPack.
                     $lap = new ShipitLAFFPack();
+                    $cubone = new ShipitCubone(Configuration::get('SHIPIT_EMAIL'), Configuration::get('SHIPIT_TOKEN'), 4);
 
                     // Start packing our nice boxes.
-                    $lap->pack($boxes);
+                    //$lap->pack($boxes);
                     // Collect our container details.
-                    $c_size = $lap->get_container_dimensions();
-                    $ps_dimension_unit = Configuration::get('PS_DIMENSION_UNIT');
-                    $ps_weight_unit = Configuration::get('PS_WEIGHT_UNIT');
-                    $width = ShipitTools::convertToCm($ps_dimension_unit, $c_size['width']);
-                    $height = ShipitTools::convertToCm($ps_dimension_unit, $c_size['height']);
-                    $depth = ShipitTools::convertToCm($ps_dimension_unit, $c_size['length']);
-                    $weight = ShipitTools::convertToKg($ps_weight_unit, $weight);
+                    //$c_size = $lap->get_container_dimensions();
+                    //$ps_dimension_unit = Configuration::get('PS_DIMENSION_UNIT');
+                    //$ps_weight_unit = Configuration::get('PS_WEIGHT_UNIT');
+                    //$width = ShipitTools::convertToCm($ps_dimension_unit, $c_size['width']);
+                    //$height = ShipitTools::convertToCm($ps_dimension_unit, $c_size['height']);
+                    //$depth = ShipitTools::convertToCm($ps_dimension_unit, $c_size['length']);
+                    //$weight = ShipitTools::convertToKg($ps_weight_unit, $weight);
+
+                    $parcel = $cubone->calculate(array(
+                        'packages' => $boxes
+                    ));
+
+                    $width = $parcel['width'];
+                    $height = $parcel['height'];
+                    $depth = $parcel['length'];
+                    $weight = $parcel['weight'];
+                    $cubication_id = $parcel['cubication_id'];
+                    
                     // Shipit does not allow empty fields.
                     if (!$width || !$height || !$depth || !$weight) {
                       // ShipitTools::log('updateCache: products without dimensions and/or weight (width => '.$width.', height => '.$height.', depth => '.$depth.', weight => '.$weight.').');
@@ -119,7 +131,8 @@ class ShipitCore extends \CarrierModule
                 'width' => $width,
                 'height' => $height,
                 'depth' => $depth,
-                'weight' => $weight
+                'weight' => $weight,
+                'cubication_id' => $cubication_id
             );
 
             $dest_code = ShipitLists::searchCityId($address->city);
@@ -138,16 +151,20 @@ class ShipitCore extends \CarrierModule
             $s_width = (float)Configuration::get('SHIPIT_SET_VALUE_WIDTH');
             $s_height = (float)Configuration::get('SHIPIT_SET_VALUE_HEIGHT');
             $s_depth = (float)Configuration::get('SHIPIT_SET_VALUE_DEPTH');
+            $s_weight = (float)Configuration::get('SHIPIT_SET_VALUE_WEIGHT');
             $product_width = (float)$product['width'];
             $product_height = (float)$product['height'];
             $product_depth = (float)$product['depth'];
+            $product_weight = (float)$product['weight'];
 
             switch (Configuration::get('SHIPIT_SET_DIMENSIONS')) {
                 case 1: // Set the specified dimensions.
                     $values = array(
                         ($s_width ? $s_width : $product_width),
                         ($s_height ? $s_height : $product_height),
-                        ($s_depth ? $s_depth : $product_depth)
+                        ($s_depth ? $s_depth : $product_depth),
+                        ($s_weight ? $s_weight : $product_weight),
+                        1
                     );
 
                     break;
@@ -156,7 +173,9 @@ class ShipitCore extends \CarrierModule
                     $values = array(
                         ($s_width && !$product_width ? $s_width : $product_width),
                         ($s_height && !$product_height ? $s_height : $product_height),
-                        ($s_depth && !$product_depth ? $s_depth : $product_depth)
+                        ($s_depth && !$product_depth ? $s_depth : $product_depth),
+                        ($s_weight && !$product_weight ? $s_weight : $product_weight),
+                        1
                     );
 
                     break;
@@ -165,7 +184,9 @@ class ShipitCore extends \CarrierModule
                     $values = array(
                         ($s_width && ($product_width < $s_width) ? $s_width : $product_width),
                         ($s_height && ($product_height < $s_height) ? $s_height : $product_height),
-                        ($s_depth && ($product_depth < $s_depth) ? $s_depth : $product_depth)
+                        ($s_depth && ($product_depth < $s_depth) ? $s_depth : $product_depth),
+                        ($s_weight && ($product_weight < $s_weight) ? $s_weight : $product_weight),
+                        1
                     );
 
                     break;
@@ -174,7 +195,9 @@ class ShipitCore extends \CarrierModule
                     $values = array(
                         ($s_width && ($product_width > $s_width) ? $s_width : $product_width),
                         ($s_height && ($product_height > $s_height) ? $s_height : $product_height),
-                        ($s_depth && ($product_depth > $s_depth) ? $s_depth : $product_depth)
+                        ($s_depth && ($product_depth > $s_depth) ? $s_depth : $product_depth),
+                        ($s_weight && ($product_weight > $s_weight) ? $s_weight : $product_weight),
+                        1
                     );
 
                     break;
@@ -183,7 +206,9 @@ class ShipitCore extends \CarrierModule
                     $values = array(
                         $product_width,
                         $product_height,
-                        $product_depth
+                        $product_depth,
+                        $product_weight,
+                        1
                     );
 
                     break;
@@ -191,7 +216,7 @@ class ShipitCore extends \CarrierModule
 
             sort($values);
 
-            $boxes[] = array_combine(array('height', 'width', 'length'), $values);
+            $boxes[] = array_combine(array('amount', 'weight', 'width', 'height', 'length'), $values);
         }
 
         return $boxes;

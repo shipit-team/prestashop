@@ -10,6 +10,7 @@ namespace Shipit\Service;
     public $store = true;
     public $packing_id = null;
     public $name = '';
+    public $cubication_id = null;
 
     public function __construct($id_cart, $store = true, $packing_id = null, $name = '') {
       $cache = new ShipitCache($id_cart);
@@ -21,6 +22,7 @@ namespace Shipit\Service;
       $this->store = $store;
       $this->packing_id = $packing_id;
       $this->name = $name;
+      $this->cubication_id = (int)$cache->package['cubication_id'];
     }
 
     function getSize() {
@@ -32,7 +34,8 @@ namespace Shipit\Service;
         'volumetric_weight' => $this->getVolumetricWeight(),
         'store' => $this->getStore(),
         'packing_id' => $this->getPackingId(),
-        'name' => $this->getName()
+        'name' => $this->getName(),
+        'cubication_id' => $this->cubication_id
       );
     }
 
