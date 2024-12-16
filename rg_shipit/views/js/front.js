@@ -96,3 +96,49 @@ $(document).ajaxComplete(function(event, xhr, settings) {
         }
     }
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    const addressField = document.querySelector('input[name="address1"]');
+    const phoneField = document.querySelector('input[name="phone"]');
+    const form = document.querySelector('form[name="form"]') || document.querySelector('form');
+
+    // Eliminar el texto "Opcional" al lado del campo Teléfono
+    const optionalComment = document.querySelector('div.form-control-comment');
+    if (optionalComment) {
+        optionalComment.remove();
+    }
+
+    // Mostrar el mensaje debajo del campo Dirección
+    if (addressField) {
+        const message = document.createElement('div');
+        message.textContent = "Para asegurar una entrega a tiempo, verifica que tu dirección incluya calle, número, departamento/oficina y comuna correcta.";
+        message.style.color = "#555";
+        message.style.fontSize = "12px";
+        message.style.marginTop = "5px";
+
+        addressField.addEventListener('focus', function () {
+            if (!addressField.parentNode.contains(message)) {
+                addressField.parentNode.appendChild(message);
+            }
+        });
+
+        addressField.addEventListener('blur', function () {
+            if (addressField.parentNode.contains(message)) {
+                addressField.parentNode.removeChild(message);
+            }
+        });
+    }
+
+    // Validación del campo Teléfono
+    if (form && phoneField) {
+        form.addEventListener('submit', function (event) {
+            const phoneValue = phoneField.value.trim();
+            if (phoneValue === "") {
+                event.preventDefault(); // Detener el envío del formulario
+                alert("El campo Teléfono es obligatorio. Por favor, complétalo para continuar.");
+                phoneField.focus();
+            }
+        });
+    }
+});
+

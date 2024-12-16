@@ -164,7 +164,8 @@ class Rg_Shipit extends ShipitCore
       $this->registerHook('actionPaymentConfirmation') &&
       $this->registerHook('actionOrderGridDefinitionModifier') &&
      // $this->registerHook('additionalCustomerFormFields') &&
-      $this->registerHook('actionObjectCarrierUpdateAfter');
+      $this->registerHook('actionObjectCarrierUpdateAfter') &&
+      $this->registerHook('actionValidateCustomerAddressForm');
 
     if (version_compare(_PS_VERSION_, '1.7.0.0', '>=') == true) {
       $return &= $this->registerHook('displayCarrierExtraContent');
@@ -1715,6 +1716,16 @@ class Rg_Shipit extends ShipitCore
         }
       }
     }
+  }
+  
+  public function hookActionValidateCustomerAddressForm($params)
+  {
+      $form = $params['form'];
+  
+      // Verificar si el campo "phone" está vacío.
+      if (!$form->getField('phone') || empty($form->getField('phone')->getValue())) {
+          $params['errors'][] = $this->l('El campo teléfono es obligatorio. Por favor, complétalo.');
+      }
   }
 
   public function processWebhook($json)
