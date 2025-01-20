@@ -48,7 +48,7 @@ class Rg_Shipit extends ShipitCore
   {
     $this->name = 'rg_shipit';
     $this->tab = 'shipping_logistics';
-    $this->version = '3.0.2';
+    $this->version = '3.2.0';
     $this->author = 'Shipit';
     $this->author_link = 'https://shipit.cl/';
     $this->need_instance = 1;
@@ -162,6 +162,7 @@ class Rg_Shipit extends ShipitCore
       $this->registerHook('displayAdminOrder') &&
       $this->registerHook('displayAdminOrderSideBottom') &&
       $this->registerHook('actionPaymentConfirmation') &&
+      $this->registerHook('actionOrderStatusPostUpdate') &&
       $this->registerHook('actionOrderGridDefinitionModifier') &&
      // $this->registerHook('additionalCustomerFormFields') &&
       $this->registerHook('actionObjectCarrierUpdateAfter') &&
@@ -1130,139 +1131,142 @@ class Rg_Shipit extends ShipitCore
       }
   }
 
-  public function hookActionPaymentConfirmation($params)
+  public function hookActionOrderStatusPostUpdate($params)
   {
-    $api_core = new ShipitIntegrationCore($this->config['SHIPIT_EMAIL'], $this->config['SHIPIT_TOKEN'], 4);
-    $company = $api_core->administrative();
-    $skus = array();
-    if ($company->service->name == 'fulfillment') {
-      $skus = $api_core->skus();
-    }
-    $id_order = (int)$params['id_order'];
-    $log_url = Tools::getShopDomainSsl(true) . $this->_path . 'error_log';
-    $admin_order_link = $this->context->link->getAdminLink('AdminOrders') . '&vieworder&id_order=' . (int)$params['id_order'];
+    $order_status = $params['newOrderStatus']->template;
+    if($order_status == 'payment') {
+      $api_core = new ShipitIntegrationCore($this->config['SHIPIT_EMAIL'], $this->config['SHIPIT_TOKEN'], 4);
+      $company = $api_core->administrative();
+      $skus = array();
+      if ($company->service->name == 'fulfillment') {
+        $skus = $api_core->skus();
+      }
+      $id_order = (int)$params['id_order'];
+      $log_url = Tools::getShopDomainSsl(true) . $this->_path . 'error_log';
+      $admin_order_link = $this->context->link->getAdminLink('AdminOrders') . '&vieworder&id_order=' . (int)$params['id_order'];
 
-    if (isset($this->context->cookie->rg_shipit_conf)) {
-      $this->context->controller->confirmations[] = $this->context->cookie->rg_shipit_conf;
-      unset($this->context->cookie->rg_shipit_conf);
-    }
-    if (ShipitShipment::isShipitCarrierByIdOrder((int)$id_order)) {
-      $error = $shipit_id = false;
-      $errors = array();
-      $order = new Order((int)$id_order);
-      ShipitTools::log('Order rg' . print_r($order, true));
-      $ProductDetailObject = new OrderDetail;
-      $products = $ProductDetailObject->getList((int)$id_order);
-      $address = new Address((int)$order->id_address_delivery);
-      $customer = new Customer((int)$order->id_customer);
-      $items = 0;
-      $insuranceProducts = '';
-      $inventory = array();
-      foreach ($products as $prod) {
-        if (!empty($skus)) {
-          $sku = $prod['product_reference'] != '' ? $prod['product_reference'] : $prod['product_id'];
-          foreach ($skus as $skuObject) {
-            if (strtolower($skuObject->name) == strtolower($sku)) {
-              $inventory[] = (object) array('sku_id' => $skuObject->id
-                                            , 'amount' => $prod['product_quantity']
-                                            , 'description' => $skuObject->description
-                                            , 'warehouse_id' => $skuObject->warehouse_id);
+      if (isset($this->context->cookie->rg_shipit_conf)) {
+        $this->context->controller->confirmations[] = $this->context->cookie->rg_shipit_conf;
+        unset($this->context->cookie->rg_shipit_conf);
+      }
+      if (ShipitShipment::isShipitCarrierByIdOrder((int)$id_order)) {
+        $error = $shipit_id = false;
+        $errors = array();
+        $order = new Order((int)$id_order);
+        ShipitTools::log('Order rg' . print_r($order, true));
+        $ProductDetailObject = new OrderDetail;
+        $products = $ProductDetailObject->getList((int)$id_order);
+        $address = new Address((int)$order->id_address_delivery);
+        $customer = new Customer((int)$order->id_customer);
+        $items = 0;
+        $insuranceProducts = '';
+        $inventory = array();
+        foreach ($products as $prod) {
+          if (!empty($skus)) {
+            $sku = $prod['product_reference'] != '' ? $prod['product_reference'] : $prod['product_id'];
+            foreach ($skus as $skuObject) {
+              if (strtolower($skuObject->name) == strtolower($sku)) {
+                $inventory[] = (object) array('sku_id' => $skuObject->id
+                                              , 'amount' => $prod['product_quantity']
+                                              , 'description' => $skuObject->description
+                                              , 'warehouse_id' => $skuObject->warehouse_id);
+              }
             }
           }
+          $items += $prod['product_quantity'];
+          if ($insuranceProducts != '') $insuranceProducts .= ',';
+          $insuranceProducts .=  $prod['product_name'];
         }
-        $items += $prod['product_quantity'];
-        if ($insuranceProducts != '') $insuranceProducts .= ',';
-        $insuranceProducts .=  $prod['product_name'];
-      }
-      $testStreets = array();
-      $testStreets[]    = $address->address1;
-      $tool = new ShipitTools();
-      for ($i = 0, $totalTestStreets = count($testStreets); $i < $totalTestStreets; $i++) {
-        $addressSplit = $tool->splitAddressAndNumber($testStreets[$i]);
-      }
+        $testStreets = array();
+        $testStreets[]    = $address->address1;
+        $tool = new ShipitTools();
+        for ($i = 0, $totalTestStreets = count($testStreets); $i < $totalTestStreets; $i++) {
+          $addressSplit = $tool->splitAddressAndNumber($testStreets[$i]);
+        }
 
-      $service = ShipitServices::getByReference((int)$order->id_carrier);
-      $dest_code = ShipitLists::searchcityId($address->city);
-      $shipit_payment = new ShipitPayment($order->payment, 0, 0, 0, 0, $order->total_paid, '', false);
-      $shipit_source = new ShipitSource('', '', '', '', '');
-      $shipit_seller = new ShipitSeller((int)$order->id, Tools::getHttpHost(true) . __PS_BASE_URI__, '', $this->config['SHIPIT_INTEGRATION_DATE']);
-      $shipit_gift_card = new ShipitGiftCard();
-      $shipit_size = new ShipitSize((int)$order->id_cart);
-      $tool = new ShipitTools();
-      $courierClientName = $tool->getClientName((int)$order->id_carrier);
-      $CourierId = $tool->getCourierId(
-        $this->config['SHIPIT_EMAIL'],
-        $this->config['SHIPIT_TOKEN'],
-        (int)!$this->config['SHIPIT_LIVE_MODE'],
-        $courierClientName
-      );
+        $service = ShipitServices::getByReference((int)$order->id_carrier);
+        $dest_code = ShipitLists::searchcityId($address->city);
+        $shipit_payment = new ShipitPayment($order->payment, 0, 0, 0, 0, $order->total_paid, '', false);
+        $shipit_source = new ShipitSource('', '', '', '', '');
+        $shipit_seller = new ShipitSeller((int)$order->id, Tools::getHttpHost(true) . __PS_BASE_URI__, '', $this->config['SHIPIT_INTEGRATION_DATE']);
+        $shipit_gift_card = new ShipitGiftCard();
+        $shipit_size = new ShipitSize((int)$order->id_cart);
+        $tool = new ShipitTools();
+        $courierClientName = $tool->getClientName((int)$order->id_carrier);
+        $CourierId = $tool->getCourierId(
+          $this->config['SHIPIT_EMAIL'],
+          $this->config['SHIPIT_TOKEN'],
+          (int)!$this->config['SHIPIT_LIVE_MODE'],
+          $courierClientName
+        );
 
-      $shipit_courier = new ShipitCourier($courierClientName, $CourierId, ($CourierId == null) ? false : true);
-      $shipit_price = new ShipitPrice($order->total_paid, $order->total_shipping, 0, 0, $order->carrier_tax_rate, 0);
-      $shipit_insurance = new ShipitInsurance($order->total_paid - $order->total_shipping, $id_order, $insuranceProducts, true, $this->config['SHIPIT_EMAIL'], $this->config['SHIPIT_TOKEN']);
-      $shipit_city_track = new ShipitCityTrack('', '2019-06-07T17:13:09.141-04:00', '', '', '');
-      $shipit_origin = new ShipitOrigin('', '', '', '', '', '', '', false, null, null);
-      $shipit_destiny = new ShipitDestiny(
-        $addressSplit['streetNumber'],
-        ($addressSplit['address'] != '') ? $addressSplit['address'] : $address->address1,
-        ($addressSplit['numberAddition'] ? $addressSplit['numberAddition'] : '') . ($address->address2 ? ' ' . $address->address2 : ''),
-        (int)$dest_code,
-        $address->city,
-        $address->firstname . ' ' . $address->lastname,
-        $customer->email,
-        ($address->phone_mobile ? $address->phone_mobile : $address->phone),
-        false,
-        null,
-        'predeterminado'
-      );
-      $shipit_order = new ShipitOrder(
-        3,
-        2,
-        (int)$order->id,
-        $items,
-        false,
-        (int)$shipit_id,
-        2,
-        1,
-        $inventory,
-        false,
-        $shipit_payment,
-        $shipit_source,
-        $shipit_seller,
-        $shipit_gift_card,
-        $shipit_size,
-        $shipit_courier,
-        $shipit_price,
-        $shipit_insurance,
-        $shipit_city_track,
-        $shipit_origin,
-        $shipit_destiny
-      );
-      $api_order = new ShipitIntegrationOrder($this->config['SHIPIT_EMAIL'], $this->config['SHIPIT_TOKEN'], 1);
-      $integrationseller = $api_order->setting();
-      $errors = array();
-      if ($integrationseller->configuration->automatic_delivery == true) {
-        $request_params_shipment = array();
-        $request_params_shipment['order'] = array();
-        $request_params_shipment['order']['id'] = $shipit_id;
-        $api_core = new ShipitIntegrationCore($this->config['SHIPIT_EMAIL'], $this->config['SHIPIT_TOKEN'], 4);
-        $shipit_id = $api_core->shipments($shipit_order);
-      } else {
-        $shipit_id = $api_order->orders($shipit_order);
-      }
-      if ($shipit_id) {
-        $shipment = new ShipitShipment();
-        $shipment->shipit_id = (int)$shipit_id;
-        $shipment->id_order = (int)$id_order;
-        $shipment->courier = $service->desc;
-        $shipment->packing = pSQL($this->config['SHIPIT_PACKAGE']);
-        $shipment->add();
-        $this->context->cookie->rg_shipit_conf = $this->l('The shipment was successfully generated.');
-      } else {
-        $error = $this->l('Errors generating service. Check log file for more information.') . ' ' . $this->l('You can check log file at:') . ' <a target="_blank" href="' . $log_url . '">' . $log_url . '</a>';
-        $this->context->controller->errors[] = $error;
-        if ($errors) {
-          ShipitTools::log('PrestaShop (' . _PS_VERSION_ . '), error: ' . print_r($errors, true));
+        $shipit_courier = new ShipitCourier($courierClientName, $CourierId, ($CourierId == null) ? false : true);
+        $shipit_price = new ShipitPrice($order->total_paid, $order->total_shipping, 0, 0, $order->carrier_tax_rate, 0);
+        $shipit_insurance = new ShipitInsurance($order->total_paid - $order->total_shipping, $id_order, $insuranceProducts, true, $this->config['SHIPIT_EMAIL'], $this->config['SHIPIT_TOKEN']);
+        $shipit_city_track = new ShipitCityTrack('', '2019-06-07T17:13:09.141-04:00', '', '', '');
+        $shipit_origin = new ShipitOrigin('', '', '', '', '', '', '', false, null, null);
+        $shipit_destiny = new ShipitDestiny(
+          $addressSplit['streetNumber'],
+          ($addressSplit['address'] != '') ? $addressSplit['address'] : $address->address1,
+          ($addressSplit['numberAddition'] ? $addressSplit['numberAddition'] : '') . ($address->address2 ? ' ' . $address->address2 : ''),
+          (int)$dest_code,
+          $address->city,
+          $address->firstname . ' ' . $address->lastname,
+          $customer->email,
+          ($address->phone_mobile ? $address->phone_mobile : $address->phone),
+          false,
+          null,
+          'predeterminado'
+        );
+        $shipit_order = new ShipitOrder(
+          3,
+          2,
+          (int)$order->id,
+          $items,
+          false,
+          (int)$shipit_id,
+          2,
+          1,
+          $inventory,
+          false,
+          $shipit_payment,
+          $shipit_source,
+          $shipit_seller,
+          $shipit_gift_card,
+          $shipit_size,
+          $shipit_courier,
+          $shipit_price,
+          $shipit_insurance,
+          $shipit_city_track,
+          $shipit_origin,
+          $shipit_destiny
+        );
+        $api_order = new ShipitIntegrationOrder($this->config['SHIPIT_EMAIL'], $this->config['SHIPIT_TOKEN'], 1);
+        $integrationseller = $api_order->setting();
+        $errors = array();
+        if ($integrationseller->configuration->automatic_delivery == true) {
+          $request_params_shipment = array();
+          $request_params_shipment['order'] = array();
+          $request_params_shipment['order']['id'] = $shipit_id;
+          $api_core = new ShipitIntegrationCore($this->config['SHIPIT_EMAIL'], $this->config['SHIPIT_TOKEN'], 4);
+          $shipit_id = $api_core->shipments($shipit_order);
+        } else {
+          $shipit_id = $api_order->orders($shipit_order);
+        }
+        if ($shipit_id) {
+          $shipment = new ShipitShipment();
+          $shipment->shipit_id = (int)$shipit_id;
+          $shipment->id_order = (int)$id_order;
+          $shipment->courier = $service->desc;
+          $shipment->packing = pSQL($this->config['SHIPIT_PACKAGE']);
+          $shipment->add();
+          $this->context->cookie->rg_shipit_conf = $this->l('The shipment was successfully generated.');
+        } else {
+          $error = $this->l('Errors generating service. Check log file for more information.') . ' ' . $this->l('You can check log file at:') . ' <a target="_blank" href="' . $log_url . '">' . $log_url . '</a>';
+          $this->context->controller->errors[] = $error;
+          if ($errors) {
+            ShipitTools::log('PrestaShop (' . _PS_VERSION_ . '), error: ' . print_r($errors, true));
+          }
         }
       }
     }

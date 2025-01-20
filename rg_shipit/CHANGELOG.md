@@ -1,4 +1,7 @@
 # CHANGELOG
+= 3.2.0 =
+*Aceptar Mercado Pago.
+
 = 3.0.0 =
 *Implementar fulfillment para v4.
 
