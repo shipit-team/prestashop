@@ -22,6 +22,7 @@ use Shipit\Service\ShipitHttpClient;
     }
 
     function setting() {
+      $setting = null;
       $client = new ShipitHttpClient($this->base.'/integrations/seller/prestashop', $this->headers);
       $response = $client->get();
       if ($response->getStatusCode() != 200) {

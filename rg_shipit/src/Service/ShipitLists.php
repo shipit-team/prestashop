@@ -1,7 +1,7 @@
 <?php
 namespace Shipit\Service;
-use PrestaShop\PrestaShop\Adapter\Entity\Db;
-use PrestaShop\PrestaShop\Adapter\Entity\Configuration;
+use Db;
+use Configuration;
 /**
  * Integral logistics for eCommerce with pickup or fulfillment through Shipit
  *

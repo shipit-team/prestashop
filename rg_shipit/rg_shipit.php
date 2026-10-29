@@ -41,6 +41,11 @@ class Rg_Shipit extends ShipitCore
 {
   public $id_carrier;
   public $config;
+  public $author_link;
+  public $secure_key;
+  public $bulk_actions = array();
+  // Evita recotizar más de una vez por request cuando la API no devolvió transportistas.
+  private static $shipit_cached = false;
   private $deleting_from_module = false;
   public $available_status = array();
 
@@ -48,13 +53,13 @@ class Rg_Shipit extends ShipitCore
   {
     $this->name = 'rg_shipit';
     $this->tab = 'shipping_logistics';
-    $this->version = '3.2.0';
+    $this->version = '3.3.0';
     $this->author = 'Shipit';
     $this->author_link = 'https://shipit.cl/';
     $this->need_instance = 1;
     $this->ps_versions_compliancy = array('min' => '1.5', 'max' => _PS_VERSION_);
     $this->bootstrap = true;
-    $this->secure_key = Tools::encrypt($this->name);
+    $this->secure_key = md5(_COOKIE_KEY_ . $this->name);
 
     parent::__construct();
 
@@ -265,7 +270,7 @@ class Rg_Shipit extends ShipitCore
         $val = $this->getCredentialsFormValues();
         $this->loadShipitCommunes();
 
-        if (!count(ShipitLists::cities())) {
+        if (!ShipitLists::cities()) {
           $output .= $this->displayError($this->l('Module could not connect with Shipit services using the configured credentials.'));
         } else {
           foreach ($val as $k => $v) {
@@ -320,8 +325,8 @@ class Rg_Shipit extends ShipitCore
       'version' => $this->version,
       'author' => $this->author,
       'author_link' => $this->author_link,
-      'secure_key' => $this->secure_key,
-      '_url' => Tools::getShopDomainSsl(true) . $this->_path
+      'webhook_url' => $this->getWebhookUrl(),
+      'logs_url' => $this->getLogsUrl()
     ));
 
     $output .= $this->context->smarty->fetch($this->local_path . 'views/templates/admin/configure-top.tpl');
@@ -334,13 +339,9 @@ class Rg_Shipit extends ShipitCore
       $output .= $this->renderConfigForm();
     }
     $line = '';
-    $file = fopen(dirname(__FILE__) . "/error_log.txt", "r") or die("Unable to open file!");
-    while (!feof($file)) {
-      $line .= fgets($file);
-      $line .= '<br>';
+    if (is_readable(ShipitTools::logFile())) {
+      $line = nl2br(Tools::safeOutput(Tools::file_get_contents(ShipitTools::logFile())), false);
     }
-
-    fclose($file);
     $this->context->smarty->assign('logshipit', $line);
     $output .= $this->context->smarty->fetch($this->local_path . 'views/templates/admin/configure-bottom.tpl');
 
@@ -928,8 +929,8 @@ class Rg_Shipit extends ShipitCore
   {
     if ($this->config['SHIPIT_ACTIVE_GENERATION']) {
       $id_order = (int)$params['id_order'];
-      $log_url = Tools::getShopDomainSsl(true) . $this->_path . 'error_log';
-      $admin_order_link = $this->context->link->getAdminLink('AdminOrders') . '&vieworder&id_order=' . (int)$params['id_order'];
+      $log_url = $this->getLogsUrl();
+      $admin_order_link = $this->context->link->getAdminLink('AdminOrders', true, array(), array('id_order' => (int)$params['id_order'], 'vieworder' => 1));
       if (isset($this->context->cookie->rg_shipit_conf)) {
         $this->context->controller->confirmations[] = $this->context->cookie->rg_shipit_conf;
         unset($this->context->cookie->rg_shipit_conf);
@@ -1005,12 +1006,13 @@ class Rg_Shipit extends ShipitCore
 
   public function hookDisplayAdminOrderSideBottom($params)
   {
+    $log_url = $this->getLogsUrl();
     if ($this->config['SHIPIT_ACTIVE_GENERATION']) {
     if (Tools::isSubmit('submitGenerateShipit')) {
       $api_core = new ShipitIntegrationCore($this->config['SHIPIT_EMAIL'], $this->config['SHIPIT_TOKEN'], 4);
       $company = $api_core->administrative();
       $skus = array();
-      if ($company->service->name == 'fulfillment') {
+      if (isset($company->service->name) && $company->service->name == 'fulfillment') {
         $skus = $api_core->skus();
       }
       $id_order = (int)$params['id_order'];
@@ -1076,7 +1078,7 @@ class Rg_Shipit extends ShipitCore
         $shipment->packing = pSQL($this->config['SHIPIT_PACKAGE']);
         $shipment->add();
         $this->context->cookie->rg_shipit_conf = $this->l('The shipment was successfully generated.');
-        $admin_order_link = $this->context->link->getAdminLink('AdminOrders') . '&vieworder&id_order=' . (int)$params['id_order'];
+        $admin_order_link = $this->context->link->getAdminLink('AdminOrders', true, array(), array('id_order' => (int)$params['id_order'], 'vieworder' => 1));
         Tools::redirectAdmin($admin_order_link);
       } else {
         $error = $this->l('Errors generating service. Check log file for more information.') . ' ' . $this->l('You can check log file at:') . ' <a target="_blank" href="' . $log_url . '">' . $log_url . '</a>';
@@ -1113,12 +1115,15 @@ class Rg_Shipit extends ShipitCore
         }
 
       Tools::clearSmartyCache();
-      $generate_Shipment = $this->generateShipment($params);
-      return $this->fetch('module:rg_shipit/views/templates/admin/tracking.tpl',
-                        ['shipment' => $this->getShipitShipment($generate_Shipment['id_order'])
-                        ,'logoPath' => $this->_path . 'logo.gif'
-                        ,'form_type' => $form_type
-                        ,'courierClientName' => $courierClientName]);
+      // generateShipment() devuelve null si la generación está desactivada o el pedido no es de Shipit.
+      $this->generateShipment($params);
+      $this->context->smarty->assign(array(
+        'shipment' => $this->getShipitShipment((int)$params['id_order']),
+        'logoPath' => $this->_path . 'logo.gif',
+        'form_type' => $form_type,
+        'courierClientName' => $courierClientName
+      ));
+      return $this->fetch('module:rg_shipit/views/templates/admin/tracking.tpl');
       }
   }
 
@@ -1138,12 +1143,12 @@ class Rg_Shipit extends ShipitCore
       $api_core = new ShipitIntegrationCore($this->config['SHIPIT_EMAIL'], $this->config['SHIPIT_TOKEN'], 4);
       $company = $api_core->administrative();
       $skus = array();
-      if ($company->service->name == 'fulfillment') {
+      if (isset($company->service->name) && $company->service->name == 'fulfillment') {
         $skus = $api_core->skus();
       }
       $id_order = (int)$params['id_order'];
-      $log_url = Tools::getShopDomainSsl(true) . $this->_path . 'error_log';
-      $admin_order_link = $this->context->link->getAdminLink('AdminOrders') . '&vieworder&id_order=' . (int)$params['id_order'];
+      $log_url = $this->getLogsUrl();
+      $admin_order_link = $this->context->link->getAdminLink('AdminOrders', true, array(), array('id_order' => (int)$params['id_order'], 'vieworder' => 1));
 
       if (isset($this->context->cookie->rg_shipit_conf)) {
         $this->context->controller->confirmations[] = $this->context->cookie->rg_shipit_conf;
@@ -1244,7 +1249,7 @@ class Rg_Shipit extends ShipitCore
         $api_order = new ShipitIntegrationOrder($this->config['SHIPIT_EMAIL'], $this->config['SHIPIT_TOKEN'], 1);
         $integrationseller = $api_order->setting();
         $errors = array();
-        if ($integrationseller->configuration->automatic_delivery == true) {
+        if (isset($integrationseller->configuration->automatic_delivery) && $integrationseller->configuration->automatic_delivery == true) {
           $request_params_shipment = array();
           $request_params_shipment['order'] = array();
           $request_params_shipment['order']['id'] = $shipit_id;
@@ -1322,8 +1327,8 @@ class Rg_Shipit extends ShipitCore
         'tracking' => $shipit_shipment->tracking,
         'courier' => $shipit_shipment->courier,
         'packing' => $shipit_shipment->packing,
-        'status' => (isset($this->available_status[$shipit_shipment->status]) ? $this->available_status[$shipit_shipment->status] : $this->l('Other')),
-        'date_upd' => Tools::displayDate($shipit_shipment->date_upd, null, true)
+        'status' => (isset($this->available_status[(string)$shipit_shipment->status]) ? $this->available_status[(string)$shipit_shipment->status] : $this->l('Other')),
+        'date_upd' => Tools::displayDate($shipit_shipment->date_upd, true)
       );
       return $shipit_shipment_with_status_available;
 
@@ -1386,8 +1391,8 @@ class Rg_Shipit extends ShipitCore
         'tracking' => $shipit_shipment->tracking,
         'courier' => $shipit_shipment->courier,
         'packing' => $shipit_shipment->packing,
-        'status' => (isset($this->available_status[$shipit_shipment->status]) ? $this->available_status[$shipit_shipment->status] : $this->l('Other')),
-        'date_upd' => Tools::displayDate($shipit_shipment->date_upd, null, true)
+        'status' => (isset($this->available_status[(string)$shipit_shipment->status]) ? $this->available_status[(string)$shipit_shipment->status] : $this->l('Other')),
+        'date_upd' => Tools::displayDate($shipit_shipment->date_upd, true)
       );
       $fields_form = array(
         'form' => array(
@@ -1458,7 +1463,7 @@ class Rg_Shipit extends ShipitCore
 
   private function loadShipitCommunes($refresh = false)
   {
-    if ($refresh || !count(ShipitLists::cities())) {
+    if ($refresh || !ShipitLists::cities()) {
       $api = new ShipitIntegrationCore(
         Tools::getValue('SHIPIT_EMAIL', $this->config['SHIPIT_EMAIL']),
         Tools::getValue('SHIPIT_TOKEN', $this->config['SHIPIT_TOKEN']),
@@ -1522,9 +1527,9 @@ class Rg_Shipit extends ShipitCore
     // Check if it has not yet been cached.
     if (
       $cache->hash_cart != $hash_cart ||
-      (!$cache->hasValidCarriers() && !isset($this->context->shipit_cached))
+      (!$cache->hasValidCarriers() && !self::$shipit_cached)
     ) {
-      $this->context->shipit_cached = true;
+      self::$shipit_cached = true;
        if (!$shipit_core->updateCache($params, $hash_cart)) {
         return false;
       } else {
@@ -1627,14 +1632,17 @@ class Rg_Shipit extends ShipitCore
   {
     $chile_cities = ShipitLists::cities();
     $secure_key = false;
+    $ajax_url = false;
     if ($this->context->controller->controller_type == 'admin') {
       $secure_key = $this->secure_key;
+      $ajax_url = $this->context->link->getAdminLink('AdminShipitCarrier');
     }
     $currency = Currency::getCurrencyInstance($this->config['chile_id_currency']);
     if (version_compare(_PS_VERSION_, '1.6.0.0', '>=') === true) {
 
       return Media::addJsDef(array($this->name => array(
         'secure_key' => $secure_key,
+        'ajax_url' => $ajax_url,
         'page_name' => $page_name,
         'ps_version' => Tools::substr(_PS_VERSION_, 0, 3),
         'cities' => $chile_cities,
@@ -1651,10 +1659,10 @@ class Rg_Shipit extends ShipitCore
         'secure_key' => $secure_key,
         'page_name' => $page_name,
         'ps_version' => Tools::substr(_PS_VERSION_, 0, 3),
-        'cities' => Tools::jsonEncode($chile_cities),
+        'cities' => json_encode($chile_cities),
         'id_country' => $this->config['chile_id_country'],
         'currency_sign' => $currency->sign . ' (' . $currency->iso_code . ')',
-        'texts' => Tools::jsonEncode(array(
+        'texts' => json_encode(array(
           'wrong_city' => $this->l('city name is wrong'),
           'no_results' => $this->l('No results found for')
         ))
@@ -1732,9 +1740,54 @@ class Rg_Shipit extends ShipitCore
       }
   }
 
+  /**
+   * Webhook de Shipit. Lo atienden controllers/front/webhook.php y, en PS < 9, el webhook.php legado.
+   *
+   * @return bool true si el body era JSON válido y se procesó sin errores
+   */
+  public function handleWebhookRequest($secure_key, $data)
+  {
+    if (!$this->active || !$data || !hash_equals((string)$this->secure_key, (string)$secure_key)) {
+      return false;
+    }
+
+    $data = str_replace('info=', '', $data);
+    $data = urldecode($data);
+
+    if (!$json = json_decode($data)) {
+      return false;
+    }
+
+    if (isset($json->configuration->rates->zones)) {
+      $this->processEmergencyRates($json);
+
+      return true;
+    }
+
+    return $this->processWebhook($json);
+  }
+
+  public function getWebhookUrl()
+  {
+    return $this->context->link->getModuleLink($this->name, 'webhook', array('secure_key' => $this->secure_key));
+  }
+
+  public function getLogsUrl()
+  {
+    return $this->context->link->getAdminLink('AdminShipitCarrier', true, array(), array('ajax' => 1, 'action' => 'viewLogs'));
+  }
+
   public function processWebhook($json)
-  { 
+  {
+    if (!isset($json->seller_order_id, $json->sub_status)) {
+      ShipitTools::log('Webhook sin seller_order_id o sub_status: ' . print_r($json, true));
+      return false;
+    }
     $order = new Order((int)$json->seller_order_id);
+    if (!Validate::isLoadedObject($order)) {
+      ShipitTools::log('Webhook para un pedido inexistente: ' . (int)$json->seller_order_id);
+      return false;
+    }
     $shipit_statuses = [
       'in_route' => 140,
       'delivered' => 5,
@@ -1760,7 +1813,11 @@ class Rg_Shipit extends ShipitCore
       'delayed' => 147,
       'canceled' => 148,
     ];
-    $new_status = $shipit_statuses[pSQL($json->sub_status)];
+    if (!isset($shipit_statuses[$json->sub_status])) {
+      ShipitTools::log('Webhook con sub_status desconocido: ' . pSQL($json->sub_status));
+      return false;
+    }
+    $new_status = $shipit_statuses[$json->sub_status];
     $history  = new OrderHistory();
     $history->id_order = (int)$order->id;
     $history->changeIdOrderState((int) $new_status, $order->id);
@@ -1832,6 +1889,8 @@ class Rg_Shipit extends ShipitCore
         }
       }
     }
+
+    return true;
   }
 
   public function processEmergencyRates($emergencyRates)

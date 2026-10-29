@@ -97,7 +97,7 @@ namespace Shipit\Service;
         'city_track' => $this->getCityTrack(),
         'origin' => $this->getOrigin(),
         'destiny' => $this->getDestiny(),
-        'destiny' => $this->getMongoOrderSeller()
+        'mongo_order_seller' => $this->getMongoOrderSeller()
       );
     }
 

@@ -7,7 +7,7 @@ namespace Shipit\Service;
  * @copyright 2011-2018 Rolige - All Rights Reserved
  * @license   Proprietary and confidential
  */
-use PrestaShop\PrestaShop\Adapter\Entity\Db;
+use Db;
 
 class ShipitShipment extends \ObjectModel
 {

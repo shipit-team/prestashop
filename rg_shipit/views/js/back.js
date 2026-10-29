@@ -10,9 +10,9 @@ $(document).ready(function() {
     $('#alert_asm').click(function (e) {
         e.preventDefault();
         $.ajax({
-            url: module_dir + 'rg_shipit/ajax-bo.php',
+            url: rg_shipit.ajax_url,
             type: 'POST',
-            data: {secure_key: rg_shipit.secure_key},
+            data: {ajax: 1, action: 'dismissAsmAlert'},
         }).done(function(data) {
             if (data == 1) {
                 $('#alert_asm').parent('div').hide();

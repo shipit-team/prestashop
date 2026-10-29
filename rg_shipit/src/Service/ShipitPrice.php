@@ -49,7 +49,7 @@ namespace Shipit\Service;
     }
 
     function getOvercharge() {
-      return $this->overchargue;
+      return $this->overcharge;
     }
   }
 ?>

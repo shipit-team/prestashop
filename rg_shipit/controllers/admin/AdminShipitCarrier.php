@@ -7,13 +7,16 @@
  * @license   Proprietary and confidential
  */
 
+use Shipit\Service\ShipitShipment;
+use Shipit\Service\ShipitTools;
+
 class AdminShipitCarrierController extends ModuleAdminController
 {
     public function __construct()
     {
         $this->table = 'rg_shipit_shipment';
         $this->identifier = 'id_pedido';
-        $this->className = 'ShipitShipment';
+        $this->className = ShipitShipment::class;
         $this->lang = false;
         $this->context = Context::getContext();
         $this->list_no_link = true;
@@ -40,17 +43,17 @@ class AdminShipitCarrierController extends ModuleAdminController
 
         $this->fields_list = array(
             'id_pedido' => array(
-                'title' => $this->l('Order ID'),
+                'title' => $this->module->l('Order ID', 'adminshipitcarrier'),
                 'align' => 'center',
                 'class' => 'fixed-width-xs',
                 'filter_key' => 'a!id_order'
             ),
             'customer' => array(
-                'title' => $this->l('Customer'),
+                'title' => $this->module->l('Customer', 'adminshipitcarrier'),
                 'havingFilter' => true,
             ),
             'total_paid_tax_incl' => array(
-                'title' => $this->l('Order Total'),
+                'title' => $this->module->l('Order Total', 'adminshipitcarrier'),
                 'align' => 'center',
                 'prefix' => '<b>',
                 'suffix' => '</b>',
@@ -59,14 +62,14 @@ class AdminShipitCarrierController extends ModuleAdminController
                 'currency' => true
             ),
             'fecha_pedido' => array(
-                'title' => $this->l('Order Date'),
+                'title' => $this->module->l('Order Date', 'adminshipitcarrier'),
                 'width' => 152,
                 'align' => 'right',
                 'type' => 'datetime',
                 'filter_key' => 'o!date_add'
             ),
             'status' => array(
-                'title' => $this->l('Shipit Status'),
+                'title' => $this->module->l('Shipit Status', 'adminshipitcarrier'),
                 'align' => 'center',
                 'class' => 'fixed-width-xs',
                 'type' => 'select',
@@ -75,28 +78,28 @@ class AdminShipitCarrierController extends ModuleAdminController
                 'filter_type' => 'string'
             ),
             'courier' => array(
-                'title' => $this->l('Courier'),
+                'title' => $this->module->l('Courier', 'adminshipitcarrier'),
                 'align' => 'center',
                 'class' => 'fixed-width-xs',
                 'filter_key' => 'a!courier',
                 'filter_type' => 'string'
             ),
             'packing' => array(
-                'title' => $this->l('Packing'),
+                'title' => $this->module->l('Packing', 'adminshipitcarrier'),
                 'align' => 'center',
                 'class' => 'fixed-width-xs',
                 'filter_key' => 'a!packing',
                 'filter_type' => 'string'
             ),
             'date_upd' => array(
-                'title' => $this->l('Last Update Date'),
+                'title' => $this->module->l('Last Update Date', 'adminshipitcarrier'),
                 'width' => 152,
                 'align' => 'right',
                 'type' => 'datetime',
                 'filter_key' => 'a!date_add'
             ),
             'tracking' => array(
-                'title' => $this->l('Tracking Number'),
+                'title' => $this->module->l('Tracking Number', 'adminshipitcarrier'),
                 'class' => 'fixed-width-xs',
                 'align' => 'center'
             ),
@@ -108,7 +111,9 @@ class AdminShipitCarrierController extends ModuleAdminController
         parent::getList($id_lang, $order_by, $order_way, $start, $limit, $id_lang_shop);
 
         foreach ($this->_list as &$row) {
-            $row['status'] = (isset($this->module->available_status[$row['status']]) ? $this->module->available_status[$row['status']] : $this->l('Other'));
+            // Los pedidos sin envío vienen con status NULL (RIGHT JOIN); null como índice está deprecado en PHP 8.5.
+            $status = (string)$row['status'];
+            $row['status'] = (isset($this->module->available_status[$status]) ? $this->module->available_status[$status] : $this->module->l('Other', 'adminshipitcarrier'));
         }
     }
 
@@ -120,7 +125,26 @@ class AdminShipitCarrierController extends ModuleAdminController
 
     public function renderView()
     {
-        Tools::redirectAdmin($this->context->link->getAdminLink('AdminOrders').'&vieworder&id_order='.(int)Tools::getValue('id_pedido'));
+        Tools::redirectAdmin($this->context->link->getAdminLink('AdminOrders', true, array(), array('id_order' => (int)Tools::getValue('id_pedido'), 'vieworder' => 1)));
+    }
+
+    /**
+     * Oculta el aviso de stock avanzado (antes ajax-bo.php).
+     */
+    public function ajaxProcessDismissAsmAlert()
+    {
+        Configuration::updateValue('SHIPIT_ALERTED_ASM', 1);
+        die('1');
+    }
+
+    /**
+     * Muestra el log del módulo en texto plano (antes logs.php).
+     */
+    public function ajaxProcessViewLogs()
+    {
+        header('Content-Type: text/plain; charset=utf-8');
+        $text = is_readable(ShipitTools::logFile()) ? Tools::file_get_contents(ShipitTools::logFile()) : '';
+        die($text ? $text : 'No existen errores registrados.');
     }
 
     public function renderKpis()
@@ -131,8 +155,8 @@ class AdminShipitCarrierController extends ModuleAdminController
         $helper->id = 'box-generated-shipment-percent';
         $helper->icon = 'icon-bar-chart';
         $helper->color = 'color1';
-        $helper->title = $this->l('Generated Percentage', null, null, false);
-        $helper->subtitle = $this->l('ALL TIME', null, null, false);
+        $helper->title = $this->module->l('Generated Percentage', 'adminshipitcarrier');
+        $helper->subtitle = $this->module->l('ALL TIME', 'adminshipitcarrier');
         $valores = Db::getInstance()->getRow(
             'SELECT COUNT(DISTINCT i.`id_order`) as cantidad, COUNT(DISTINCT o.`id_order`) as total
             FROM `'._DB_PREFIX_.'rg_shipit_shipment` i
@@ -146,8 +170,8 @@ class AdminShipitCarrierController extends ModuleAdminController
         $helper->id = 'box-generated-shipment-total';
         $helper->icon = 'icon-truck';
         $helper->color = 'color2';
-        $helper->title = $this->l('Generated Total', null, null, false);
-        $helper->subtitle = $this->l('ALL TIME', null, null, false);
+        $helper->title = $this->module->l('Generated Total', 'adminshipitcarrier');
+        $helper->subtitle = $this->module->l('ALL TIME', 'adminshipitcarrier');
         $helper->value = $valores['cantidad'].'/'.$valores['total'];
         $kpis[] = $helper->generate();
 

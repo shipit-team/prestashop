@@ -57,7 +57,7 @@ class ShipitLAFFPack {
                 else {
                     if(!array_key_exists('length', $container) ||
                         !array_key_exists('width', $container)) {
-                            throw new InvalidArgumentException("Function _pack only accepts array (length, width, height) as argument for $container");
+                            throw new \InvalidArgumentException("Function _pack only accepts array (length, width, height) as argument for container, got " . json_encode($container));
                     }
                 
                     $this->container_dimensions['length'] = $container['length'];
@@ -91,7 +91,7 @@ class ShipitLAFFPack {
             else {
                 if(!array_key_exists('length', $container) ||
                     !array_key_exists('width', $container)) {
-                        throw new InvalidArgumentException("Pack function only accepts array (length, width, height) as argument for \$container");
+                        throw new \InvalidArgumentException("Pack function only accepts array (length, width, height) as argument for \$container");
                 }
             
                 $this->container_dimensions['length'] = $container['length'];
@@ -102,7 +102,7 @@ class ShipitLAFFPack {
         }
         
         if(!isset($this->boxes)) {
-            throw new InvalidArgumentException("Pack function only accepts array (length, width, height) as argument for \$boxes or no boxes given!");
+            throw new \InvalidArgumentException("Pack function only accepts array (length, width, height) as argument for \$boxes or no boxes given!");
         }
         
         $this->pack_level();
@@ -213,7 +213,7 @@ class ShipitLAFFPack {
      */
     function get_level_dimensions($level = 0) {
         if($level < 0 || $level > $this->level || !array_key_exists($level, $this->packed_boxes)) {
-            throw new OutOfRangeException("Level {$level} not found!");
+            throw new \OutOfRangeException("Level {$level} not found!");
         }
     
         $boxes = $this->packed_boxes;
@@ -242,7 +242,7 @@ class ShipitLAFFPack {
      */
     function _calc_longest_edge($boxes, $edges = array('length', 'width', 'height')) {
         if(!isset($boxes) || !is_array($boxes)) {
-            throw new InvalidArgumentException('_calc_longest_edge function requires an array of boxes, '.gettype($boxes).' given');
+            throw new \InvalidArgumentException('_calc_longest_edge function requires an array of boxes, '.gettype($boxes).' given');
         }
         
         // Longest edge
@@ -309,7 +309,7 @@ class ShipitLAFFPack {
      */ 
     function _swap($array, $el1, $el2) {
         if(!array_key_exists($el1, $array) || !array_key_exists($el2, $array)) {
-            throw new InvalidArgumentException("Both element to be swapped need to exist in the supplied array");
+            throw new \InvalidArgumentException("Both element to be swapped need to exist in the supplied array");
         }
     
         $tmp = $array[$el1];
@@ -328,7 +328,7 @@ class ShipitLAFFPack {
      */
     function _get_volume($box)  {   
         if(!is_array($box) || count(array_keys($box)) < 3) {
-            throw new InvalidArgumentException("_get_volume function only accepts arrays with 3 values (length, width, height)");
+            throw new \InvalidArgumentException("_get_volume function only accepts arrays with 3 values (length, width, height)");
         }
         
         $box = array_values($box);
@@ -346,11 +346,11 @@ class ShipitLAFFPack {
      */
     private function _try_fit_box($box, $space)  {
         if(count($box) < 3) {
-            throw new InvalidArgumentException("_try_fit_box function parameter $box only accepts arrays with 3 values (length, width, height)");
+            throw new \InvalidArgumentException("_try_fit_box function parameter box only accepts arrays with 3 values (length, width, height), got " . json_encode($box));
         }
         
         if(count($space) < 3) {
-            throw new InvalidArgumentException("_try_fit_box function parameter $space only accepts arrays with 3 values (length, width, height)");
+            throw new \InvalidArgumentException("_try_fit_box function parameter space only accepts arrays with 3 values (length, width, height), got " . json_encode($space));
         }
     
         for($i = 0; $i < count($box); $i++) {

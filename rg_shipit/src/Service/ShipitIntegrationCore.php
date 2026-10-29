@@ -79,6 +79,7 @@ namespace Shipit\Service;
     }
 
     function administrative() {
+      $company = null;
       $client = new ShipitHttpClient($this->base.'/setup/administrative', $this->headers);
       $response = $client->get();
       if ($response->getStatusCode() != 200) {
@@ -90,6 +91,7 @@ namespace Shipit\Service;
     }
 
     function communes() {
+      $communes = null;
       $client = new ShipitHttpClient($this->base.'/communes', $this->headers);
       $response = $client->get();
       if ($response->getStatusCode() != 200) {
@@ -101,6 +103,7 @@ namespace Shipit\Service;
     }
 
     function skus() {
+      $skus = null;
       $client = new ShipitHttpClient($this->base.'/fulfillment/skus/all', $this->headers);
       $response = $client->get();
       if ($response->getStatusCode() != 200) {
@@ -112,6 +115,7 @@ namespace Shipit\Service;
     }
 
     function insurance() {
+      $setting = null;
       $client = new ShipitHttpClient($this->base.'/settings/9', $this->headers);
       $response = $client->get();
       if ($response->getStatusCode() != 200) {
@@ -123,6 +127,7 @@ namespace Shipit\Service;
     }
 
     function setWebhook($webhook = array()) {
+      $webhook_response = null;
       $client = new ShipitHttpClient($this->base.'/integrations/webhook', $this->headers);
       $response = $client->patch($webhook);
       if ($response->getStatusCode() != 200) {
@@ -133,7 +138,7 @@ namespace Shipit\Service;
       return $webhook_response;
     }
 
-    function rates($params = array(), $best_price) {
+    function rates($params, $best_price) {
       $client = new ShipitHttpClient($this->base.'/rates', $this->headers);
       $response = $client->allow_redirects_post($params);
       if ($response->getStatusCode() != 200) {

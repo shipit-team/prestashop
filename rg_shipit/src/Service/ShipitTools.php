@@ -1,11 +1,11 @@
 <?php
 namespace Shipit\Service;
-use PrestaShop\PrestaShop\Adapter\Entity\Tools;
-use PrestaShop\PrestaShop\Adapter\Entity\Db;
-use PrestaShop\PrestaShop\Adapter\Entity\Combination;
-use PrestaShop\PrestaShop\Adapter\Entity\Configuration;
-use PrestaShop\PrestaShop\Adapter\Entity\DbQuery;
-use PrestaShop\PrestaShop\Adapter\Entity\Country;
+use Tools;
+use Db;
+use Combination;
+use Configuration;
+use DbQuery;
+use Country;
 /**
  * Integral logistics for eCommerce with pickup or fulfillment through Shipit
  *
@@ -287,7 +287,8 @@ class ShipitTools
         return Db::getInstance()->getValue(
             'SELECT MD5(GROUP_CONCAT(cp.`id_product`, cp.`id_product_attribute`, cp.`quantity`, \''.md5($config).'\', a.`city`))
             FROM `'._DB_PREFIX_.'cart_product` cp
-            LEFT JOIN `'._DB_PREFIX_.'address` a ON (cp.`id_address_delivery` = a.`id_address`)
+            INNER JOIN `'._DB_PREFIX_.'cart` c ON (c.`id_cart` = cp.`id_cart`)
+            LEFT JOIN `'._DB_PREFIX_.'address` a ON (a.`id_address` = IF(cp.`id_address_delivery` > 0, cp.`id_address_delivery`, c.`id_address_delivery`))
             WHERE cp.`id_cart` = '.(int)$id_cart
         );
     }
@@ -333,8 +334,16 @@ class ShipitTools
         return self::error_log(
             '['.date('Y-m-d H:i:s').'] '.print_r($object, true)."\n",
             3,
-            dirname(__FILE__).'/../error_log.txt'
+            self::logFile()
         );
+    }
+
+    /**
+     * Archivo de log del módulo; lo leen la página de configuración y AdminShipitCarrier (viewLogs).
+     */
+    public static function logFile()
+    {
+        return _PS_MODULE_DIR_.'rg_shipit/error_log.txt';
     }
 
     /**

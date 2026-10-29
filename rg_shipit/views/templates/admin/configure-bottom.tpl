@@ -18,11 +18,11 @@
     <ul>
         <li>
             <b>{l s='Configure this URL in your Shipit Admin Panel - API Configuration as Webhook' mod='rg_shipit'}</b>:
-            <br><code>{$rg_shipit._url|escape:'html':'UTF-8'}webhook.php?secure_key={$rg_shipit.secure_key|escape:'htmlall':'UTF-8'}</code>
+            <br><code>{$rg_shipit.webhook_url|escape:'html':'UTF-8'}</code>
         </li>
         <li>
             <b>{l s='You can check error logs at' mod='rg_shipit'}</b>:
-            <br><a href="{$rg_shipit._url|escape:'html':'UTF-8'}logs.php?token={$rg_shipit.secure_key|escape:'htmlall':'UTF-8'}" target="_blank">{$rg_shipit._url|escape:'html':'UTF-8'}logs.php?token={$rg_shipit.secure_key|escape:'htmlall':'UTF-8'}</a>
+            <br><a href="{$rg_shipit.logs_url|escape:'html':'UTF-8'}" target="_blank">{l s='View log' mod='rg_shipit'}</a>
         </li>
     </ul>
 </div>
