@@ -6,24 +6,10 @@ namespace Composer\Autoload;
 
 class ComposerStaticInitb2452d5cc4c33808d8056f856613ffef
 {
-    public static $files = array (
-        'ad155f8f1cf0d418fe49e248db8c661b' => __DIR__ . '/..' . '/react/promise/src/functions_include.php',
-    );
-
     public static $prefixLengthsPsr4 = array (
         'S' => 
         array (
             'Shipit\\' => 7,
-        ),
-        'R' => 
-        array (
-            'React\\Promise\\' => 14,
-        ),
-        'G' => 
-        array (
-            'GuzzleHttp\\Stream\\' => 18,
-            'GuzzleHttp\\Ring\\' => 16,
-            'GuzzleHttp\\' => 11,
         ),
     );
 
@@ -32,25 +18,10 @@ class ComposerStaticInitb2452d5cc4c33808d8056f856613ffef
         array (
             0 => __DIR__ . '/../..' . '/src',
         ),
-        'React\\Promise\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/react/promise/src',
-        ),
-        'GuzzleHttp\\Stream\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/guzzlehttp/streams/src',
-        ),
-        'GuzzleHttp\\Ring\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/guzzlehttp/ringphp/src',
-        ),
-        'GuzzleHttp\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/guzzlehttp/guzzle/src',
-        ),
     );
 
     public static $classMap = array (
+        'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'Rg_Shipit' => __DIR__ . '/../..' . '/rg_shipit.php',
     );
 

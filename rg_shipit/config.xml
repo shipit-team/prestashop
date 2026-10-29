@@ -1,8 +1,8 @@
-<?xml version="3.2.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <module>
     <name>rg_shipit</name>
     <displayName><![CDATA[Quoting Couriers Chile by Shipit]]></displayName>
-    <version><![CDATA[1.0.0]]></version>
+    <version><![CDATA[3.3.0]]></version>
     <description><![CDATA[Integral logistics for eCommerce with pickup or fulfillment through Shipit]]></description>
     <author><![CDATA[Shipit]]></author>
     <tab><![CDATA[shipping_logistics]]></tab>

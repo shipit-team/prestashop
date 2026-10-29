@@ -7,7 +7,7 @@ namespace Shipit\Service;
  * @copyright 2011-2018 Rolige - All Rights Reserved
  * @license   Proprietary and confidential
  */
-use PrestaShop\PrestaShop\Adapter\Entity\Tools;
+use Tools;
 
 class ShipitCache extends \ObjectModel
 {
@@ -43,6 +43,31 @@ class ShipitCache extends \ObjectModel
                 $this->carriers = Tools::unSerialize($this->carriers);
             }
         }
+    }
+
+    /**
+     * REPLACE en vez de INSERT/UPDATE: el checkout de PS 9 (Hummingbird) dispara requests en paralelo
+     * que recotizan el mismo carro, y un INSERT doble fallaba con "Duplicate entry" en la PK id_cart.
+     */
+    public function save($null_values = false, $auto_date = true)
+    {
+        $this->serializeOption();
+        $saved = \Db::getInstance()->insert(
+            self::$definition['table'],
+            array(
+                'id_cart' => (int)$this->id_cart,
+                'hash_cart' => $this->hash_cart === null ? null : pSQL($this->hash_cart),
+                'package' => $this->package === null ? null : pSQL($this->package),
+                'carriers' => $this->carriers === null ? null : pSQL($this->carriers),
+            ),
+            true,
+            false,
+            \Db::REPLACE
+        );
+        $this->id = (int)$this->id_cart;
+        $this->clearCache();
+
+        return $saved;
     }
 
     public function add($auto_date = true, $null_values = false)

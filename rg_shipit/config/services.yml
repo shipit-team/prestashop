@@ -1,3 +1,6 @@
 services:
-  'Shipit\Controllers\Admin\CustomOrdersController':
+  'Shipit\Controller\Admin\CustomOrdersController':
      class: Shipit\Controller\Admin\CustomOrdersController
+     public: true
+     autowire: true
+     autoconfigure: true

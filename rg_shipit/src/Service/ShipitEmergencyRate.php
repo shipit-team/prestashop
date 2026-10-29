@@ -1,7 +1,7 @@
 <?php
   namespace Shipit\Service;
-  use PrestaShop\PrestaShop\Adapter\Entity\DbQuery;
-  use PrestaShop\PrestaShop\Adapter\Entity\Db;
+  use DbQuery;
+  use Db;
   class ShipitEmergencyRate {
     public $region_id = '';
     public $price = '';

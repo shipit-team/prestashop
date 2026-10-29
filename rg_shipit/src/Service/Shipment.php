@@ -40,7 +40,7 @@ namespace Shipit\Service;
     }
 
     function getReference() {
-      return $this->rederence;
+      return $this->reference;
     }
 
     function getItems() {

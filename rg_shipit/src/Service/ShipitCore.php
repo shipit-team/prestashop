@@ -9,11 +9,11 @@ namespace Shipit\Service;
  * @license   Proprietary and confidential
  */
 
-use PrestaShop\PrestaShop\Adapter\Entity\Address;
-use PrestaShop\PrestaShop\Adapter\Entity\Currency;
-use PrestaShop\PrestaShop\Adapter\Entity\Country;
-use PrestaShop\PrestaShop\Adapter\Entity\Carrier;
-use PrestaShop\PrestaShop\Adapter\Entity\Configuration;
+use Address;
+use Currency;
+use Country;
+use Carrier;
+use Configuration;
 use Shipit\libraries\ShipitLAFFPack;
 class ShipitCore extends \CarrierModule
 {

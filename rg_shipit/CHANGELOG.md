@@ -1,4 +1,11 @@
 # CHANGELOG
+= 3.3.0 =
+*Compatibilidad con PrestaShop 9 y PHP 8.5.
+*Webhook servido por controlador front (modules/.htaccess de PS 9 bloquea los .php directos).
+*Cliente HTTP con cURL nativo (se elimina Guzzle).
+*Corregir cache de tarifas: recotiza al cambiar la dirección y evita "Duplicate entry" con peticiones en paralelo.
+*Log del módulo unificado y accesible desde el administrador.
+
 = 3.2.0 =
 *Aceptar Mercado Pago.
 

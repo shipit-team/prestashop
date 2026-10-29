@@ -7,16 +7,17 @@ use Symfony\Component\HttpFoundation\Request;
 use Shipit\Service\ShipitIntegrationOrder;
 use Shipit\Service\ShipitIntegrationCore;
 use Shipit\Service\ShipitTools;
-use PrestaShop\PrestaShop\Adapter\Entity\Order;
-use PrestaShop\PrestaShop\Adapter\Entity\OrderDetail;
-use PrestaShop\PrestaShop\Adapter\Entity\Address;
-use PrestaShop\PrestaShop\Adapter\Entity\Customer;
+use Order;
+use OrderDetail;
+use Address;
+use Customer;
 use Shipit\Service\ShipitServices;
 use Shipit\Service\ShipitLists;
 use Shipit\Service\ShipitPayment;
 use Shipit\Service\ShipitSource;
 use Shipit\Service\ShipitSeller;
-use PrestaShop\PrestaShop\Adapter\Entity\Tools;
+use Tools;
+use Configuration;
 use Shipit\Service\ShipitGiftCard;
 use Shipit\Service\ShipitSize;
 use Shipit\Service\ShipitCache;
@@ -32,9 +33,9 @@ class CustomOrdersController extends FrameworkBundleAdminController
 {
   public function indexAction(Request $request)
   {
-    $orders_bulk_ids = $request->request->all()['order_orders_bulk'];
+    $orders_bulk_ids = $request->request->all()['order_orders_bulk'] ?? array();
     $this->processBulkSended($orders_bulk_ids);
-    return $this->redirect('sell/orders/');
+    return $this->redirectToRoute('admin_orders_index');
   }
 
   private function processBulkSended($orders_bulk_ids)
@@ -42,12 +43,12 @@ class CustomOrdersController extends FrameworkBundleAdminController
     if (is_array($orders_bulk_ids) && !empty($orders_bulk_ids)) {
 
       $massive_orders = array();
-      $api_order = new ShipitIntegrationOrder($this->configuration->get('SHIPIT_EMAIL'), $this->configuration->get('SHIPIT_TOKEN'), 1);
+      $api_order = new ShipitIntegrationOrder(Configuration::get('SHIPIT_EMAIL'), Configuration::get('SHIPIT_TOKEN'), 1);
       $integrationseller = $api_order->setting();
-      $core = new ShipitIntegrationCore($this->configuration->get('SHIPIT_EMAIL'), $this->configuration->get('SHIPIT_TOKEN'), 4);
+      $core = new ShipitIntegrationCore(Configuration::get('SHIPIT_EMAIL'), Configuration::get('SHIPIT_TOKEN'), 4);
       $company = $core->administrative();
       $skus = array();
-      if ($company->service->name == 'fulfillment') {
+      if (isset($company->service->name) && $company->service->name == 'fulfillment') {
         $skus = $core->skus();
       }
       foreach ($orders_bulk_ids as $id_order) {
@@ -86,20 +87,20 @@ class CustomOrdersController extends FrameworkBundleAdminController
         $dest_code = ShipitLists::searchcityId($address->city);
         $shipit_payment = new ShipitPayment($order->payment, 0, 0, 0, 0, $order->total_paid, '', false);
         $shipit_source = new ShipitSource('', '', '', '', '');
-        $shipit_seller = new ShipitSeller((int)$order->id, Tools::getHttpHost(true) . __PS_BASE_URI__, '', $this->configuration->get('SHIPIT_INTEGRATION_DATE'));
+        $shipit_seller = new ShipitSeller((int)$order->id, Tools::getHttpHost(true) . __PS_BASE_URI__, '', Configuration::get('SHIPIT_INTEGRATION_DATE'));
         $shipit_gift_card = new ShipitGiftCard();
         $shipit_size = new ShipitSize((int)$order->id_cart);
         $tool = new ShipitTools();
         $courierClientName = $tool->getClientName((int)$order->id_carrier);
         $CourierId = $tool->getCourierId(
-          $this->configuration->get('SHIPIT_EMAIL'),
-          $this->configuration->get('SHIPIT_TOKEN'),
-          (int)!$this->configuration->get('SHIPIT_LIVE_MODE'),
+          Configuration::get('SHIPIT_EMAIL'),
+          Configuration::get('SHIPIT_TOKEN'),
+          (int)!Configuration::get('SHIPIT_LIVE_MODE'),
           $courierClientName
         );
         $shipit_courier = new ShipitCourier($courierClientName, $CourierId, ($CourierId == null) ? false : true);
         $shipit_price = new ShipitPrice($order->total_paid, $order->total_shipping, 0, 0, $order->carrier_tax_rate, 0);
-        $shipit_insurance = new ShipitInsurance($order->total_paid - $order->total_shipping, $id_order, $insuranceProducts, true, $this->configuration->get('SHIPIT_EMAIL'), $this->configuration->get('SHIPIT_TOKEN'));
+        $shipit_insurance = new ShipitInsurance($order->total_paid - $order->total_shipping, $id_order, $insuranceProducts, true, Configuration::get('SHIPIT_EMAIL'), Configuration::get('SHIPIT_TOKEN'));
         $shipit_city_track = new ShipitCityTrack('', '2019-06-07T17:13:09.141-04:00', '', '', '');
         $shipit_origin = new ShipitOrigin('', '', '', '', '', '', '', false, null, null);
         $shipit_destiny = new ShipitDestiny(
@@ -121,7 +122,7 @@ class CustomOrdersController extends FrameworkBundleAdminController
             (int)$order->id,
             $items,
             false,
-            (int)$company->id,
+            isset($company->id) ? (int)$company->id : 0,
             2,
             1,
             $inventory,
@@ -142,18 +143,17 @@ class CustomOrdersController extends FrameworkBundleAdminController
           array_push($massive_orders, $shipit_order);
       }
       $errors = array();
-      if ($integrationseller->configuration->automatic_delivery == true) {
-        $api_core = new ShipitIntegrationCore($this->configuration->get('SHIPIT_EMAIL'), $this->configuration->get('SHIPIT_TOKEN'), 4);
+      if (isset($integrationseller->configuration->automatic_delivery) && $integrationseller->configuration->automatic_delivery == true) {
+        $api_core = new ShipitIntegrationCore(Configuration::get('SHIPIT_EMAIL'), Configuration::get('SHIPIT_TOKEN'), 4);
         $response = $api_core->massiveShipments(['shipments' => $massive_orders]);
       } else {
         $response = $api_order->massiveOrders(['orders' => $massive_orders]);
       }
       if (empty($response->errors) && $response) {
-        $this->confirmations[] = "Acción masiva ejecutada correctamente.";
+        $this->addFlash('success', "Acción masiva ejecutada correctamente.");
       } else {
-        ShipitTools::log('Errors' . print_r($response->errors, true));
-        $this->errors[] = Tools::displayError("Error en acción masiva, Puede revisar los logs dentro del modulo shipit para más detalle.");
-        $this->context->controller->errors[] = $error;
+        ShipitTools::log('Errors' . print_r(is_object($response) ? $response->errors : $response, true));
+        $this->addFlash('error', "Error en acción masiva, Puede revisar los logs dentro del modulo shipit para más detalle.");
         if ($errors) {
           ShipitTools::log('PrestaShop (' . _PS_VERSION_ . '), error: ' . print_r($errors, true));
         }

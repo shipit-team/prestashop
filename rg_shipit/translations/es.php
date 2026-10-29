@@ -149,6 +149,7 @@ $_MODULE['<{rg_shipit}prestashop>configure-bottom_3c6e5c5985772e5d8470e2eb0cf10c
 $_MODULE['<{rg_shipit}prestashop>configure-bottom_c620d4a721cc226a6576aa8cbc5907d6'] = 'Configure esta URL en su Panel de Administración de Shipit - Configuración API como Webhook';
 $_MODULE['<{rg_shipit}prestashop>configure-bottom_e98d6d8d14c5d4a02210a4bb7d07e963'] = 'Puede verificar los registros de errores en';
 $_MODULE['<{rg_shipit}prestashop>configure-bottom_5b6cf869265c13af8566f192b4ab3d2a'] = 'Documentación';
+$_MODULE['<{rg_shipit}prestashop>configure-bottom_c13abcf4f212ba9602fbce3d49d5e9e8'] = 'Ver log';
 $_MODULE['<{rg_shipit}prestashop>configure-bottom_4533d54a6f4ed947b5ae8689d3a50671'] = 'Puede obtener documentación en PDF para configurar este módulo';
 $_MODULE['<{rg_shipit}prestashop>configure-bottom_78463a384a5aa4fad5fa73e2f506ecfc'] = 'Inglés';
 $_MODULE['<{rg_shipit}prestashop>configure-bottom_cb5480c32e71778852b08ae1e8712775'] = 'Español';

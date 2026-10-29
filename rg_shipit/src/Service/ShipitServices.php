@@ -1,8 +1,8 @@
 <?php
 namespace Shipit\Service;
-use PrestaShop\PrestaShop\Adapter\Entity\DbQuery;
-use PrestaShop\PrestaShop\Adapter\Entity\Carrier;
-use PrestaShop\PrestaShop\Adapter\Entity\Db;
+use DbQuery;
+use Carrier;
+use Db;
 
 
 class ShipitServices extends \ObjectModel
